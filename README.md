@@ -76,3 +76,19 @@ dotnet ef database update
 ## License
 
 [Add your license information here]
+
+## Docker
+
+Build a small, production-ready image using the multi-stage Dockerfile included in the repository. This builds a self-contained Linux-x64 publish and copies it into a distroless runtime image.
+
+Build the image:
+
+```bash
+docker build -t mass:latest .
+```
+
+Run the container:
+
+```bash
+docker run --rm -p 5000:80 mass:latest
+```

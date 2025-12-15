@@ -1,0 +1,13 @@
+# Ignore common build and IDE files
+.git
+.vs
+.vscode
+.idea
+bin/
+obj/
+**/bin/
+**/obj/
+*.log
+*.user
+*.suo
+docker-compose.override.yml
