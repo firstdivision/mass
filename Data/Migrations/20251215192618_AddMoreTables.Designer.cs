@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using mass.Data;
@@ -11,9 +12,11 @@ using mass.Data;
 namespace mass.Data.Migrations
 {
     [DbContext(typeof(MassDbContext))]
-    partial class MassDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251215192618_AddMoreTables")]
+    partial class AddMoreTables
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -157,25 +160,6 @@ namespace mass.Data.Migrations
                         .HasName("pk_asp_net_user_tokens");
 
                     b.ToTable("AspNetUserTokens", (string)null);
-                });
-
-            modelBuilder.Entity("StoryContributor", b =>
-                {
-                    b.Property<string>("ContributorId")
-                        .HasColumnType("text")
-                        .HasColumnName("contributor_id");
-
-                    b.Property<int>("StoryId")
-                        .HasColumnType("integer")
-                        .HasColumnName("story_id");
-
-                    b.HasKey("ContributorId", "StoryId")
-                        .HasName("pk_story_contributor");
-
-                    b.HasIndex("StoryId")
-                        .HasDatabaseName("ix_story_contributor_story_id");
-
-                    b.ToTable("story_contributor", (string)null);
                 });
 
             modelBuilder.Entity("mass.Data.Chapter", b =>
@@ -359,6 +343,10 @@ namespace mass.Data.Migrations
                         .HasColumnType("text")
                         .HasColumnName("security_stamp");
 
+                    b.Property<int?>("StoryId")
+                        .HasColumnType("integer")
+                        .HasColumnName("story_id");
+
                     b.Property<bool>("TwoFactorEnabled")
                         .HasColumnType("boolean")
                         .HasColumnName("two_factor_enabled");
@@ -377,6 +365,9 @@ namespace mass.Data.Migrations
                     b.HasIndex("NormalizedUserName")
                         .IsUnique()
                         .HasDatabaseName("UserNameIndex");
+
+                    b.HasIndex("StoryId")
+                        .HasDatabaseName("ix_asp_net_users_story_id");
 
                     b.ToTable("AspNetUsers", (string)null);
                 });
@@ -481,23 +472,6 @@ namespace mass.Data.Migrations
                         .HasConstraintName("fk_asp_net_user_tokens_asp_net_users_user_id");
                 });
 
-            modelBuilder.Entity("StoryContributor", b =>
-                {
-                    b.HasOne("mass.Data.MassIdentityUser", null)
-                        .WithMany()
-                        .HasForeignKey("ContributorId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("fk_story_contributor_asp_net_users_contributor_id");
-
-                    b.HasOne("mass.Data.Story", null)
-                        .WithMany()
-                        .HasForeignKey("StoryId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("fk_story_contributor_stories_story_id");
-                });
-
             modelBuilder.Entity("mass.Data.Chapter", b =>
                 {
                     b.HasOne("mass.Data.MassIdentityUser", "CreatedBy")
@@ -536,6 +510,14 @@ namespace mass.Data.Migrations
                     b.Navigation("CreatedBy");
                 });
 
+            modelBuilder.Entity("mass.Data.MassIdentityUser", b =>
+                {
+                    b.HasOne("mass.Data.Story", null)
+                        .WithMany("Contributors")
+                        .HasForeignKey("StoryId")
+                        .HasConstraintName("fk_asp_net_users_stories_story_id");
+                });
+
             modelBuilder.Entity("mass.Data.MassMassIdentityUserRole", b =>
                 {
                     b.HasOne("mass.Data.MassApplicationRole", "Role")
@@ -560,11 +542,11 @@ namespace mass.Data.Migrations
             modelBuilder.Entity("mass.Data.Story", b =>
                 {
                     b.HasOne("mass.Data.MassIdentityUser", "CreatedBy")
-                        .WithMany("CreatedStories")
+                        .WithMany()
                         .HasForeignKey("CreatedById")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
-                        .HasConstraintName("fk_stories_asp_net_users_created_by_id");
+                        .HasConstraintName("fk_stories_mass_identity_user_created_by_id");
 
                     b.Navigation("CreatedBy");
                 });
@@ -576,14 +558,14 @@ namespace mass.Data.Migrations
 
             modelBuilder.Entity("mass.Data.MassIdentityUser", b =>
                 {
-                    b.Navigation("CreatedStories");
-
                     b.Navigation("UserRoles");
                 });
 
             modelBuilder.Entity("mass.Data.Story", b =>
                 {
                     b.Navigation("Chapters");
+
+                    b.Navigation("Contributors");
                 });
 #pragma warning restore 612, 618
         }

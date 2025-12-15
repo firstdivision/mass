@@ -15,6 +15,8 @@ public class MassDbContext : IdentityDbContext<MassIdentityUser, MassApplication
     }
 
     public DbSet<Story> Stories { get; set; } = null!;
+    public DbSet<Chapter> Chapters { get; set; } = null!;
+    public DbSet<Entry> Entries { get; set; } = null!;
     public DbSet<DataProtectionKey> DataProtectionKeys { get; set; } = null!;
     public DbSet<MassMassIdentityUserRole> MassMassIdentityUserRoles { get; set; } = null!;
     public DbSet<MassIdentityUser> MassIdentityUsers { get; set; } = null!;
@@ -36,5 +38,28 @@ public class MassDbContext : IdentityDbContext<MassIdentityUser, MassApplication
             .HasOne(ur => ur.Role)
             .WithMany(r => r.UserRoles)
             .HasForeignKey(ur => ur.RoleId);
+
+        // Add the relationships for Story CreatedBy and Contributors
+        builder.Entity<Story>()
+            .HasOne(s => s.CreatedBy)
+            .WithMany(u => u.CreatedStories)
+            .HasForeignKey("CreatedById")
+            .IsRequired();      
+
+        builder.Entity<Story>()
+            .HasMany(s => s.Contributors)
+            .WithMany(u => u.ContributedStories)
+            .UsingEntity<Dictionary<string, object>>(
+                "StoryContributor",
+                j => j
+                    .HasOne<MassIdentityUser>()
+                    .WithMany()
+                    .HasForeignKey("ContributorId")
+                    .OnDelete(DeleteBehavior.Cascade),
+                j => j
+                    .HasOne<Story>()
+                    .WithMany()
+                    .HasForeignKey("StoryId")
+                    .OnDelete(DeleteBehavior.Cascade)); 
     }
 }
