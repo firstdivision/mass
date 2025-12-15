@@ -56,6 +56,38 @@ else
     
 }
 
+@* Chapters & Entries (read-only) *@
+@if (!Loading && !NotFound && Authorized && StoryEntity?.Chapters?.Any() == true)
+{
+    <hr />
+    <h2>Chapters</h2>
+
+    @foreach (var chapter in StoryEntity.Chapters.OrderBy(c => c.Order))
+    {
+        <div class="card mb-3">
+            <div class="card-body">
+                <h3 class="card-title">@chapter.Order - @chapter.Title</h3>
+                <div class="text-muted mb-2">Created @chapter.CreatedAt.ToLocalTime().ToString("g")</div>
+
+                @if (chapter.Entries?.Any() == true)
+                {
+                    @foreach (var entry in chapter.Entries.OrderBy(e => e.Order))
+                    {
+                        <div class="mb-3">
+                            <div class="small text-muted">By @entry.CreatedBy?.UserName on @entry.CreatedAt.ToLocalTime().ToString("g")</div>
+                            <pre class="p-3 bg-light border rounded">@entry.Content</pre>
+                        </div>
+                    }
+                }
+                else
+                {
+                    <div class="text-muted">No entries yet.</div>
+                }
+            </div>
+        </div>
+    }
+}
+
 @code {
     [Parameter]
     public int Id { get; set; }
@@ -66,7 +98,6 @@ else
     private bool Authorized = false;
     private string? message;
 
-    [SupplyParameterFromForm]
     private InputModel Input { get; set; } = new();
 
     protected override async Task OnInitializedAsync()
@@ -86,7 +117,7 @@ else
             StoryEntity = await DbContext.Stories
                 .Include(s => s.CreatedBy)
                 .Include(s => s.Contributors)
-                .Include(s => s.Chapters).ThenInclude(c => c.Entries)
+                .Include(s => s.Chapters).ThenInclude(c => c.Entries).ThenInclude(e => e.CreatedBy)
                 .SingleOrDefaultAsync(s => s.Id == Id);
 
             if (StoryEntity is null)
