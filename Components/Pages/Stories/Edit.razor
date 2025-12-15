@@ -4,6 +4,7 @@
 @using Microsoft.AspNetCore.Authorization
 @using Microsoft.AspNetCore.Identity
 @using Microsoft.AspNetCore.Components
+@using System.Net
 @using Microsoft.AspNetCore.Components.Authorization
 @using Microsoft.EntityFrameworkCore
 @using mass.Data
@@ -74,7 +75,7 @@ else
                     {
                         <div class="mb-3">
                             <div class="small text-muted">By @entry.CreatedBy?.UserName on @entry.CreatedAt.ToLocalTime().ToString("g")</div>
-                            <p class="p-3 bg-light border rounded">@entry.Content</p>
+                            <p class="p-3 bg-light border rounded">@FormatContent(entry.Content)</p>
                         </div>
                     }
                 }
@@ -412,5 +413,12 @@ else
         {
             Adding = false;
         }
+    }
+
+    private static MarkupString FormatContent(string? content)
+    {
+        var encoded = WebUtility.HtmlEncode(content ?? "");
+        var withBreaks = encoded.Replace("\r\n", "<br/>").Replace("\n", "<br/>");
+        return (MarkupString)withBreaks;
     }
 }
