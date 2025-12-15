@@ -131,16 +131,16 @@ namespace mass.Data.Migrations
                 name: "AspNetUserPasskeys",
                 columns: table => new
                 {
-                    CredentialId = table.Column<byte[]>(type: "bytea", maxLength: 1024, nullable: false),
-                    UserId = table.Column<string>(type: "varchar(450)", nullable: false),
-                    Data = table.Column<string>(type: "text", nullable: false)
+                    credential_id = table.Column<byte[]>(type: "bytea", maxLength: 1024, nullable: false),
+                    user_id = table.Column<string>(type: "varchar(450)", nullable: false),
+                    data = table.Column<string>(type: "text", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_AspNetUserPasskeys", x => x.CredentialId);
+                    table.PrimaryKey("PK_AspNetUserPasskeys", x => x.credential_id);
                     table.ForeignKey(
                         name: "FK_AspNetUserPasskeys_AspNetUsers_UserId",
-                        column: x => x.UserId,
+                        column: x => x.user_id,
                         principalTable: "AspNetUsers",
                         principalColumn: "id",
                         onDelete: ReferentialAction.Cascade);

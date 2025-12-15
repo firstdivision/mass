@@ -1,0 +1,97 @@
+@page "/stories/create"
+
+@using System.ComponentModel.DataAnnotations
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Identity
+@using mass.Components.Account.Shared
+@using Microsoft.EntityFrameworkCore
+@using mass.Data
+
+@attribute [Authorize]
+
+@inject MassDbContext DbContext
+@inject UserManager<MassIdentityUser> UserManager
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject NavigationManager NavigationManager
+@inject ILogger<Create> Logger
+
+<PageTitle>Create Story</PageTitle>
+
+<h1>Create a New Story</h1>
+
+<div class="row">
+    <div class="col-lg-6">
+        <StatusMessage Message="@message" />
+
+        <EditForm Model="Input" OnValidSubmit="CreateStory" method="post" FormName="create-story">
+            <DataAnnotationsValidator />
+            <ValidationSummary class="text-danger" />
+
+            <div class="form-floating mb-3">
+                <InputText @bind-Value="Input.Title" id="Input.Title" class="form-control" placeholder="Story title" />
+                <label for="Input.Title">Title</label>
+                <ValidationMessage For="() => Input.Title" class="text-danger" />
+            </div>
+
+            <div class="form-floating mb-3">
+                <InputTextArea @bind-Value="Input.Description" id="Input.Description" class="form-control" placeholder="Short description" rows="4" />
+                <label for="Input.Description">Description</label>
+                <ValidationMessage For="() => Input.Description" class="text-danger" />
+            </div>
+
+            <button type="submit" class="w-100 btn btn-lg btn-primary">Create</button>
+        </EditForm>
+    </div>
+</div>
+
+@code {
+    [SupplyParameterFromForm]
+    private InputModel Input { get; set; } = new();
+    private string? message;
+
+    protected override void OnInitialized()
+    {
+        Input ??= new();
+    }
+
+    private sealed class InputModel
+    {
+        [Required]
+        [StringLength(200, MinimumLength = 1)]
+        public string Title { get; set; } = "";
+
+        [Required]
+        [StringLength(2000, MinimumLength = 1)]
+        public string Description { get; set; } = "";
+    }
+
+    private async Task CreateStory(EditContext context)
+    {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = await UserManager.GetUserAsync(authState.User);
+
+        if (user is null)
+        {
+            message = "Error: unable to load current user.";
+            return;
+        }
+
+        // Attach the user entity to the current DbContext instance to avoid tracking issues
+        var dbUser = await DbContext.MassIdentityUsers.SingleAsync(u => u.Id == user.Id);
+
+        var story = new Story
+        {
+            Title = Input.Title,
+            Description = Input.Description,
+            CreatedBy = dbUser,
+        };
+
+        DbContext.Stories.Add(story);
+        await DbContext.SaveChangesAsync();
+
+        Logger.LogInformation("Created story {StoryId} by user {UserId}", story.Id, dbUser.Id);
+
+        // Redirect to home (no details page exists yet)
+        NavigationManager.NavigateTo("/");
+    }
+}

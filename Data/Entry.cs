@@ -5,16 +5,14 @@ using System.Threading.Tasks;
 
 namespace mass.Data
 {
-    public class Story
+    public class Entry
     {
         public int Id { get; set; }
-        public required string Title { get; set; }
-        public required string Description { get; set; }
+        public int Order { get; set; }
+        public required string Content { get; set; }
         public DateTimeOffset CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTimeOffset LastModifiedAt { get; set; } = DateTime.UtcNow;
-
+        public required virtual Chapter Chapter { get; set; }
         public required virtual MassIdentityUser CreatedBy { get; set; }
-        public virtual ICollection<MassIdentityUser> Contributors { get; set; } = new List<MassIdentityUser>();
-        public virtual ICollection<Chapter> Chapters { get; set; } = new List<Chapter>();
     }
 }
