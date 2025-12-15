@@ -289,6 +289,34 @@ namespace mass.Data.Migrations
                     b.ToTable("AspNetUserRoles", (string)null);
                 });
 
+            modelBuilder.Entity("mass.Data.Story", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("CreatedById")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("created_by_id");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("title");
+
+                    b.HasKey("Id")
+                        .HasName("pk_stories");
+
+                    b.HasIndex("CreatedById")
+                        .HasDatabaseName("ix_stories_created_by_id");
+
+                    b.ToTable("stories", (string)null);
+                });
+
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
                 {
                     b.HasOne("mass.Data.MassApplicationRole", null)
@@ -348,6 +376,18 @@ namespace mass.Data.Migrations
                     b.Navigation("Role");
 
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("mass.Data.Story", b =>
+                {
+                    b.HasOne("mass.Data.MassIdentityUser", "CreatedBy")
+                        .WithMany()
+                        .HasForeignKey("CreatedById")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_stories_mass_identity_user_created_by_id");
+
+                    b.Navigation("CreatedBy");
                 });
 
             modelBuilder.Entity("mass.Data.MassApplicationRole", b =>
