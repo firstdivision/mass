@@ -91,13 +91,13 @@ Run the container (maps container port 80 to host port 5000). Pass your database
 
 ```bash
 # Inline env var
-docker run --rm -p 5000:80 \
-  -e 'DB_CONNECTION=Host=db-host;Database=massdb;Username=mass;Password=secret' \
+docker run --network mass-network --rm -p 5000:80 \
+  -e 'DB_CONNECTION=Host=localdb;Database=mass;Username=guest;Password=guest' \
   mass:latest
 
 # Or use an env file (recommended for secrets):
 # .env contents:
-# DB_CONNECTION='Host=db-host;Database=massdb;Username=mass;Password=secret'
+# DB_CONNECTION='Host=localdb;Database=mass;Username=guest;Password=guest'
 
 docker run --rm --env-file .env -p 5000:80 mass:latest
 ```
