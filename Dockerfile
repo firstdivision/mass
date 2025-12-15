@@ -7,17 +7,17 @@ COPY *.sln ./
 COPY *.csproj ./
 RUN dotnet restore "mass.sln"
 
-# Copy the rest and publish a self-contained single-file app for linux-x64
+# Copy the rest and publish a framework-dependent app
 COPY . ./
-RUN dotnet publish "mass.sln" -c Release -r linux-x64 --self-contained true \
-    -p:PublishSingleFile=true -p:PublishTrimmed=true -p:IncludeNativeLibrariesForSelfExtract=true \
-    -o /app/publish
+RUN dotnet publish "mass.sln" -c Release -o /app/publish
 
-# Final image: small distroless base with C runtime
-FROM gcr.io/distroless/cc:nonroot
+# Final image: use official ASP.NET runtime (includes libicu)
+FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS runtime
 WORKDIR /app
+ENV ASPNETCORE_URLS=http://+:80
 COPY --from=build /app/publish/ ./
-USER nonroot
 
-# For a self-contained single-file publish the executable will be named 'mass'
-ENTRYPOINT ["/app/mass"]
+# Run as non-root (image provides 'app' user)
+USER app
+
+ENTRYPOINT ["dotnet", "mass.dll"]

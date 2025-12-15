@@ -47,7 +47,7 @@
 @code {
     [SupplyParameterFromForm]
     private InputModel Input { get; set; } = default!;
-    private string? message = "hello message";
+    private string? message = "";
 
     protected override void OnInitialized()
     {
@@ -92,6 +92,6 @@
         Logger.LogInformation("Created story {StoryId} by user {UserId}", story.Id, dbUser.Id);
 
         // Redirect to home (no details page exists yet)
-        NavigationManager.NavigateTo("/");
+        NavigationManager.NavigateTo("/stories/edit/" + story.Id);
     }
 }

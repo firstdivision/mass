@@ -79,7 +79,7 @@ dotnet ef database update
 
 ## Docker
 
-Build a small, production-ready image using the multi-stage Dockerfile included in the repository. This builds a self-contained Linux-x64 publish and copies it into a distroless runtime image.
+Build a small, production-ready image using the multi-stage Dockerfile included in the repository. The Dockerfile publishes a framework-dependent build and uses the official `mcr.microsoft.com/dotnet/aspnet:10.0` runtime image which includes the native ICU package required for globalization.
 
 Build the image:
 
@@ -87,8 +87,19 @@ Build the image:
 docker build -t mass:latest .
 ```
 
-Run the container:
+Run the container (maps container port 80 to host port 5000). Pass your database connection string as the `DB_CONNECTION` environment variable:
 
 ```bash
-docker run --rm -p 5000:80 mass:latest
+# Inline env var
+docker run --rm -p 5000:80 \
+  -e 'DB_CONNECTION=Host=db-host;Database=massdb;Username=mass;Password=secret' \
+  mass:latest
+
+# Or use an env file (recommended for secrets):
+# .env contents:
+# DB_CONNECTION='Host=db-host;Database=massdb;Username=mass;Password=secret'
+
+docker run --rm --env-file .env -p 5000:80 mass:latest
 ```
+
+If you want to use a distroless base, ensure `libicu` is present in the final image (or use a self-contained publish with the necessary native libraries copied into the image).
