@@ -15,5 +15,6 @@ namespace mass.Data
 
         public required virtual Story Story { get; set; }
         public required virtual MassIdentityUser CreatedBy { get; set; }
+        public virtual ICollection<Entry> Entries { get; set; } = new List<Entry>();
     }
 }

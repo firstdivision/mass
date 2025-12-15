@@ -46,8 +46,8 @@
 
 @code {
     [SupplyParameterFromForm]
-    private InputModel Input { get; set; } = new();
-    private string? message;
+    private InputModel Input { get; set; } = default!;
+    private string? message = "hello message";
 
     protected override void OnInitialized()
     {

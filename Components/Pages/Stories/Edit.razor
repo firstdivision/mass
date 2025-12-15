@@ -1,0 +1,173 @@
+@page "/stories/edit/{Id:int}"
+
+@using System.ComponentModel.DataAnnotations
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Identity
+@using Microsoft.AspNetCore.Components
+@using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.EntityFrameworkCore
+@using mass.Data
+
+@attribute [Authorize]
+
+@inject MassDbContext DbContext
+@inject UserManager<MassIdentityUser> UserManager
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject NavigationManager NavigationManager
+@inject ILogger<Edit> Logger
+
+<PageTitle>Edit Story</PageTitle>
+
+<h1>Edit Story</h1>
+
+@if (Loading)
+{
+    <p><em>Loading...</em></p>
+}
+else if (NotFound)
+{
+    <div class="alert alert-danger">Story not found.</div>
+}
+else if (!Authorized)
+{
+    <div class="alert alert-danger">You are not authorized to edit this story.</div>
+}
+else
+{
+    <EditForm Model="Input" OnValidSubmit="Save" method="post" FormName="edit-story">
+        <DataAnnotationsValidator />
+        <ValidationSummary class="text-danger" />
+
+        <div class="form-floating mb-3">
+            <InputText @bind-Value="Input.Title" id="Input.Title" class="form-control" placeholder="Story title" />
+            <label for="Input.Title">Title</label>
+            <ValidationMessage For="() => Input.Title" class="text-danger" />
+        </div>
+
+        <div class="form-floating mb-3">
+            <InputTextArea @bind-Value="Input.Description" id="Input.Description" class="form-control" placeholder="Short description" rows="4" />
+            <label for="Input.Description">Description</label>
+            <ValidationMessage For="() => Input.Description" class="text-danger" />
+        </div>
+
+        <button type="submit" class="w-100 btn btn-lg btn-primary">Save</button>
+    </EditForm>
+
+    
+}
+
+@code {
+    [Parameter]
+    public int Id { get; set; }
+
+    private Story? StoryEntity;
+    private bool Loading = true;
+    private bool NotFound = false;
+    private bool Authorized = false;
+    private string? message;
+
+    [SupplyParameterFromForm]
+    private InputModel Input { get; set; } = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = await UserManager.GetUserAsync(authState.User);
+
+        if (user is null)
+        {
+            message = "Error: unable to load current user.";
+            Loading = false;
+            return;
+        }
+
+        try
+        {
+            StoryEntity = await DbContext.Stories
+                .Include(s => s.CreatedBy)
+                .Include(s => s.Contributors)
+                .Include(s => s.Chapters).ThenInclude(c => c.Entries)
+                .SingleOrDefaultAsync(s => s.Id == Id);
+
+            if (StoryEntity is null)
+            {
+                NotFound = true;
+                return;
+            }
+
+            var userId = user.Id;
+            Authorized = StoryEntity.CreatedBy.Id == userId || StoryEntity.Contributors.Any(c => c.Id == userId);
+
+            if (!Authorized)
+            {
+                return;
+            }
+
+            Input.Title ??= StoryEntity.Title;
+            Input.Description ??= StoryEntity.Description;
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error loading story {StoryId}", Id);
+            message = "Error loading story.";
+        }
+        finally
+        {
+            Loading = false;
+        }
+    }
+
+    private sealed class InputModel
+    {
+        [Required]
+        [StringLength(200, MinimumLength = 1)]
+        public string? Title { get; set; }
+
+        [Required]
+        [StringLength(2000, MinimumLength = 1)]
+        public string? Description { get; set; }
+    }
+
+    private async Task Save(EditContext context)
+    {
+        if (StoryEntity is null)
+        {
+            message = "Error: story not loaded.";
+            return;
+        }
+
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = await UserManager.GetUserAsync(authState.User);
+
+        if (user is null)
+        {
+            message = "Error: unable to load current user.";
+            return;
+        }
+
+        var userId = user.Id;
+        var isAuthorized = StoryEntity.CreatedBy.Id == userId || StoryEntity.Contributors.Any(c => c.Id == userId);
+
+        if (!isAuthorized)
+        {
+            message = "Error: you are not authorized to edit this story.";
+            return;
+        }
+
+        try
+        {
+            StoryEntity.Title = Input.Title;
+            StoryEntity.Description = Input.Description;
+            StoryEntity.LastModifiedAt = DateTime.UtcNow;
+
+            await DbContext.SaveChangesAsync();
+
+            NavigationManager.NavigateTo("/stories");
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error saving story {StoryId}", Id);
+            message = "Error saving story.";
+        }
+    }
+}
