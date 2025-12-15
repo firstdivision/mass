@@ -1,7 +1,87 @@
 ﻿@page "/"
 
+@using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.AspNetCore.Identity
+@using Microsoft.EntityFrameworkCore
+@using mass.Data
+
+@inject MassDbContext DbContext
+@inject UserManager<MassIdentityUser> UserManager
+@inject AuthenticationStateProvider AuthenticationStateProvider
+
 <PageTitle>Home</PageTitle>
 
-<h1>Hello, worlds!</h1>
+<AuthorizeView>
+    <Authorized>
+        <h1>Welcome back!</h1>
 
-Welcome to your new app.
+        @if (Loading)
+        {
+            <p><em>Loading your stories…</em></p>
+        }
+        else if (UserStories?.Any() != true)
+        {
+            <div class="alert alert-info">You don't have any stories yet. <a href="/stories">Browse stories</a> or start one now.</div>
+        }
+        else
+        {
+            <h2>Your Stories</h2>
+            <ul class="list-group">
+                @foreach (var s in UserStories!)
+                {
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <div>
+                            <strong>@s.Title</strong>
+                            <div class="small text-muted">Last modified @s.LastModifiedAt.ToLocalTime().ToString("g")</div>
+                        </div>
+                        <div>
+                            <a class="btn btn-sm btn-outline-primary" href="/stories/edit/@s.Id">Edit</a>
+                        </div>
+                    </li>
+                }
+            </ul>
+        }
+    </Authorized>
+    <NotAuthorized>
+        <h1>MASS — the Multi-Author Story System</h1>
+
+        <p class="lead">MASS lets people collaborate to write stories together — create stories and chapters, invite contributors, and build multi-author narratives with simple tools.</p>
+
+        <ul>
+            <li><strong>Create</strong> stories, chapters, and entries</li>
+            <li><strong>Collaborate</strong> with contributors and manage access</li>
+            <li><strong>Publish</strong> and share finished stories</li>
+        </ul>
+
+        <p>Ready to get started?</p>
+
+        <a class="btn btn-primary" href="/Account/Login">Sign in</a>
+        <a class="btn btn-outline-secondary ms-2" href="/stories">Explore Stories</a>
+    </NotAuthorized>
+</AuthorizeView>
+
+@code {
+    private List<Story>? UserStories;
+    private bool Loading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = await UserManager.GetUserAsync(authState.User);
+
+        if (user is null)
+        {
+            Loading = false;
+            return;
+        }
+
+        var userId = user.Id;
+        UserStories = await DbContext.Stories
+            .Include(s => s.CreatedBy)
+            .Where(s => s.CreatedBy.Id == userId || s.Contributors.Any(c => c.Id == userId))
+            .OrderByDescending(s => s.LastModifiedAt)
+            .ToListAsync();
+
+        Loading = false;
+    }
+}
