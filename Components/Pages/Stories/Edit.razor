@@ -90,7 +90,7 @@ else
                 @chapter.Order - @chapter.Title
             </button>
             </h2>
-            <div id="@(chapter.Id + "collapse")" class="accordion-collapse collapse" aria-labelledby="@(chapter.Id + "headingOne")" data-bs-parent="#chaptersAccordion">
+            <div id="@(chapter.Id + "collapse")" class="accordion-collapse collapse" aria-labelledby="@(chapter.Id + "headingOne")">
                 <div class="accordion-body">
                     @if (chapter.Entries?.Any() == true)
                     {
