@@ -84,3 +84,8 @@ h1:focus {
     margin-bottom: 1.25rem;
     white-space: pre-wrap;
 }
+
+.entry-editor-textarea {
+    height: 70vh;
+    resize: vertical;
+}
