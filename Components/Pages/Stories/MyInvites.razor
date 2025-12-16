@@ -104,7 +104,7 @@ else
 		</div>
 
 		<div>
-			<button class="btn btn-primary" @onclick="SendInviteAsync" disabled="@IsSending || SelectedUser is null || SelectedStoryId == 0">Send Invite</button>
+			<button class="btn btn-primary" @onclick="SendInviteAsync" disabled="@(IsSending || SelectedUser is null || SelectedStoryId == 0)">Send Invite</button>
 			@if (!string.IsNullOrEmpty(SendMessage))
 			{
 				<div class="mt-2 alert alert-info">@SendMessage</div>
@@ -196,7 +196,7 @@ else
 				.Include(si => si.Story)
 					.ThenInclude(s => s.CreatedBy)
 				.Include(si => si.InvitedBy)
-				.Where(si => si.InvitedUser.Id == user.Id)
+				.Where(si => si.InvitedUser.Id == user.Id && !si.IsAccepted)
 				.OrderByDescending(si => si.CreatedAt)
 				.ToListAsync();
 
@@ -406,6 +406,7 @@ else
 			}
 
 			invite.AcceptedAt = DateTimeOffset.UtcNow;
+            invite.IsAccepted = true;
 			await DbContext.SaveChangesAsync();
 
 			await LoadInvitesAsync();

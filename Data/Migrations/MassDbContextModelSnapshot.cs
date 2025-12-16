@@ -472,6 +472,10 @@ namespace mass.Data.Migrations
                         .HasColumnType("text")
                         .HasColumnName("invited_user_id");
 
+                    b.Property<bool>("IsAccepted")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_accepted");
+
                     b.Property<int>("StoryId")
                         .HasColumnType("integer")
                         .HasColumnName("story_id");

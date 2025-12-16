@@ -11,7 +11,7 @@ namespace mass.Data
 
         public DateTimeOffset CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTimeOffset? AcceptedAt { get; set; }
-        public bool IsAccepted => AcceptedAt.HasValue;
+        public bool IsAccepted { get; set; }
 
         public required virtual Story Story { get; set; }
         public required virtual MassIdentityUser InvitedUser { get; set; }
