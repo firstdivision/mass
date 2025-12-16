@@ -20,7 +20,13 @@
 
 <PageTitle>@(Loading ? "Edit Story" : $"Editing: {StoryEntity?.Title}")</PageTitle>
 
-<h1>@(Loading ? "Edit Story" : $"Editing: {StoryEntity?.Title}")</h1>
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1>@(Loading ? "Edit Story" : $"Editing: {StoryEntity?.Title}")</h1>
+    @if (!Loading && !NotFound && Authorized)
+    {
+        <a href="/stories/read/@Id" class="btn btn-info">Read This Story Now</a>
+    }
+</div>
 
 @if (!string.IsNullOrEmpty(message))
 {
@@ -94,7 +100,6 @@ else
                         }
                         </button>
                         <button type="button" class="btn btn-secondary" @onclick="Cancel">Cancel</button>
-                        <a href="/stories/read/@Id" class="btn btn-info">Read Story</a>
                     </EditForm>
                 </div>
             </div>
