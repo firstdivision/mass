@@ -1,0 +1,195 @@
+@page "/stories/invites"
+
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Identity
+@using Microsoft.AspNetCore.Components
+@using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.EntityFrameworkCore
+@using mass.Data
+
+@attribute [Authorize]
+
+@inject MassDbContext DbContext
+@inject UserManager<MassIdentityUser> UserManager
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject ILogger<MyInvites> Logger
+
+<PageTitle>My Invites</PageTitle>
+
+<h1>My Invites</h1>
+
+@if (Invites is null)
+{
+	<p><em>Loading...</em></p>
+}
+else if (!Invites.Any())
+{
+	<div class="alert alert-info">You have no story invites.</div>
+}
+else
+{
+	<div class="row">
+		@foreach (var invite in Invites)
+		{
+			<div class="col-md-6 mb-3">
+				<div class="card h-100">
+					<div class="card-body d-flex flex-column">
+						<h5 class="card-title">@invite.Story.Title</h5>
+						<p class="card-text">@invite.Story.Description</p>
+						<div class="mt-auto d-flex justify-content-between align-items-center">
+							<small class="text-muted">Invited by @invite.InvitedBy.UserName</small>
+							<small class="text-muted">Created: @invite.CreatedAt.ToLocalTime().ToString("g")</small>
+							<div>
+								<button class="btn btn-sm btn-primary me-2" @onclick="() => AcceptInviteAsync(invite.Id)" disabled="@IsProcessing(invite.Id)">Accept</button>
+								<button class="btn btn-sm btn-outline-danger" @onclick="() => DeclineInviteAsync(invite.Id)" disabled="@IsProcessing(invite.Id)">Decline</button>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		}
+	</div>
+}
+
+@code {
+	private List<StoryInvite>? Invites;
+	private HashSet<int> processingIds = new();
+
+	protected override async Task OnInitializedAsync()
+	{
+		await LoadInvitesAsync();
+	}
+
+	private bool IsProcessing(int id) => processingIds.Contains(id);
+
+	private async Task LoadInvitesAsync()
+	{
+		var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+		var user = await UserManager.GetUserAsync(authState.User);
+
+		if (user is null)
+		{
+			Logger.LogWarning("Unable to load invites: current user is null");
+			Invites = new List<StoryInvite>();
+			return;
+		}
+
+		try
+		{
+			Invites = await DbContext.StoryInvites
+				.Include(si => si.Story)
+					.ThenInclude(s => s.CreatedBy)
+				.Include(si => si.InvitedBy)
+				.Where(si => si.InvitedUser.Id == user.Id)
+				.OrderByDescending(si => si.CreatedAt)
+				.ToListAsync();
+		}
+		catch (Exception ex)
+		{
+			Logger.LogError(ex, "Error loading invites for user {UserId}", user.Id);
+			Invites = new List<StoryInvite>();
+		}
+	}
+
+	private async Task AcceptInviteAsync(int inviteId)
+	{
+		if (processingIds.Add(inviteId))
+		{
+			StateHasChanged();
+		}
+
+		try
+		{
+			var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+			var user = await UserManager.GetUserAsync(authState.User);
+			if (user is null)
+			{
+				Logger.LogWarning("AcceptInvite: user null");
+				return;
+			}
+
+			var invite = await DbContext.StoryInvites
+				.Include(si => si.Story)
+					.ThenInclude(s => s.Contributors)
+				.Include(si => si.InvitedUser)
+				.FirstOrDefaultAsync(si => si.Id == inviteId && si.InvitedUser.Id == user.Id);
+
+			if (invite is null)
+			{
+				Logger.LogWarning("AcceptInvite: invite not found {InviteId}", inviteId);
+				return;
+			}
+
+			if (invite.IsAccepted)
+			{
+				Logger.LogInformation("AcceptInvite: invite already accepted {InviteId}", inviteId);
+				await LoadInvitesAsync();
+				return;
+			}
+
+			// ensure user is contributor
+			if (!invite.Story.Contributors.Any(c => c.Id == user.Id))
+			{
+				invite.Story.Contributors.Add(user);
+			}
+
+			invite.AcceptedAt = DateTimeOffset.UtcNow;
+			await DbContext.SaveChangesAsync();
+
+			await LoadInvitesAsync();
+		}
+		catch (Exception ex)
+		{
+			Logger.LogError(ex, "Error accepting invite {InviteId}", inviteId);
+		}
+		finally
+		{
+			processingIds.Remove(inviteId);
+			StateHasChanged();
+		}
+	}
+
+	private async Task DeclineInviteAsync(int inviteId)
+	{
+		if (processingIds.Add(inviteId))
+		{
+			StateHasChanged();
+		}
+
+		try
+		{
+			var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+			var user = await UserManager.GetUserAsync(authState.User);
+			if (user is null)
+			{
+				Logger.LogWarning("DeclineInvite: user null");
+				return;
+			}
+
+			var invite = await DbContext.StoryInvites
+				.Include(si => si.InvitedUser)
+				.FirstOrDefaultAsync(si => si.Id == inviteId && si.InvitedUser.Id == user.Id);
+
+			if (invite is null)
+			{
+				Logger.LogWarning("DeclineInvite: invite not found {InviteId}", inviteId);
+				return;
+			}
+
+			DbContext.StoryInvites.Remove(invite);
+			await DbContext.SaveChangesAsync();
+
+			await LoadInvitesAsync();
+		}
+		catch (Exception ex)
+		{
+			Logger.LogError(ex, "Error declining invite {InviteId}", inviteId);
+		}
+		finally
+		{
+			processingIds.Remove(inviteId);
+			StateHasChanged();
+		}
+	}
+}
+
