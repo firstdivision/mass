@@ -1,10 +1,14 @@
 @page "/stories/read/{Id:int}"
 
 @using Microsoft.EntityFrameworkCore
+@using Microsoft.AspNetCore.Identity
+@using Microsoft.AspNetCore.Components.Authorization
 @using mass.Data
 @inject MassDbContext DbContext
 @inject NavigationManager NavigationManager
 @inject ILogger<Read> Logger
+@inject UserManager<MassIdentityUser> UserManager
+@inject AuthenticationStateProvider AuthenticationStateProvider
 
 @attribute [Layout(typeof(MainLayout))]
 
@@ -20,6 +24,12 @@ else
 {
     <article class="reading-mode">
         <header>
+            @if (!Story.IsPublic && IsContributor)
+            {
+                <div class="alert alert-info" role="alert">
+                    <strong>Note:</strong> This story is not public, but you can read it because you are a contributor.
+                </div>
+            }
             <h1>@Story.Title</h1>
             <p class="lead">@Story.Description</p>
             <p class="text-muted">Last modified @Story.LastModifiedAt.ToLocalTime().ToString("g")</p>
@@ -49,10 +59,12 @@ else
     private Story? Story;
     private List<string> authors = new();
     private bool IsLoading = true;
+    private bool IsContributor = false;
 
     protected override async Task OnParametersSetAsync()
     {
         IsLoading = true;
+        IsContributor = false;
 
         try
         {
@@ -64,9 +76,25 @@ else
                 .AsNoTracking()
                 .FirstOrDefaultAsync(s => s.Id == Id);
 
-            if (Story is null || !Story.IsPublic)
+            if (Story is null)
             {
-                // Not found or not public
+                // Story not found
+                NavigationManager.NavigateTo("/not-found");
+                return;
+            }
+
+            // Check if user is a contributor
+            var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+            var user = await UserManager.GetUserAsync(authState.User);
+
+            if (user is not null)
+            {
+                IsContributor = Story.CreatedBy.Id == user.Id || Story.Contributors.Any(c => c.Id == user.Id);
+            }
+
+            // Only allow access if story is public OR user is a contributor
+            if (!Story.IsPublic && !IsContributor)
+            {
                 NavigationManager.NavigateTo("/not-found");
                 return;
             }
