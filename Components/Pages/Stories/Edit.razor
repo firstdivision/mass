@@ -18,9 +18,9 @@
 @inject NavigationManager NavigationManager
 @inject ILogger<Edit> Logger
 
-<PageTitle>Edit Story</PageTitle>
+<PageTitle>@(Loading ? "Edit Story" : $"Editing: {StoryEntity?.Title}")</PageTitle>
 
-<h1>Edit Story</h1>
+<h1>@(Loading ? "Edit Story" : $"Editing: {StoryEntity?.Title}")</h1>
 
 @if (!string.IsNullOrEmpty(message))
 {
