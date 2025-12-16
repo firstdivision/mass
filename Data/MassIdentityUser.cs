@@ -11,5 +11,6 @@ namespace mass.Data
         public virtual ICollection<MassMassIdentityUserRole> UserRoles { get; set; } = null!;
         public virtual ICollection<Story> CreatedStories { get; set; } = new List<Story>();
         public virtual ICollection<Story> ContributedStories { get; set; } = new List<Story>();
+        public virtual ICollection<Entry> CreatedEntries { get; set; } = new List<Entry>();
     }
 }
