@@ -12,3 +12,6 @@ postgres:
 
 migration:
 	dotnet ef migrations add $(name) --output-dir Data/Migrations
+
+watch:
+	bash ./dotnet-watch.sh
