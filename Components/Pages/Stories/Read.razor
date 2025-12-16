@@ -22,7 +22,8 @@ else
         <header>
             <h1>@Story.Title</h1>
             <p class="lead">@Story.Description</p>
-            <p class="text-muted">By @Story.CreatedBy?.UserName &middot; Last modified @Story.LastModifiedAt.ToLocalTime().ToString("g")</p>
+            <p class="text-muted">Last modified @Story.LastModifiedAt.ToLocalTime().ToString("g")</p>
+            <p class="text-muted">Contributors: @string.Join(", ", authors)</p>
             <hr />
         </header>
 
@@ -46,6 +47,7 @@ else
     public int Id { get; set; }
 
     private Story? Story;
+    private List<string> authors = new();
     private bool IsLoading = true;
 
     protected override async Task OnParametersSetAsync()
@@ -56,6 +58,7 @@ else
         {
             Story = await DbContext.Stories
                 .Include(s => s.CreatedBy)
+                .Include(s => s.Contributors)
                 .Include(s => s.Chapters)
                     .ThenInclude(c => c.Entries)
                 .AsNoTracking()
@@ -67,6 +70,14 @@ else
                 NavigationManager.NavigateTo("/not-found");
                 return;
             }
+
+            authors.AddRange(Story
+                .Contributors
+                .Where(c => !string.IsNullOrEmpty(c.UserName))
+                .Select(c => c.UserName!)
+                .ToList());
+
+            authors.Insert(0, Story.CreatedBy.UserName!);
         }
         catch (Exception ex)
         {
