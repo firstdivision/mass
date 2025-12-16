@@ -17,6 +17,7 @@
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject NavigationManager NavigationManager
 @inject ILogger<Edit> Logger
+@inject IJSRuntime JS
 
 <PageTitle>Edit Story</PageTitle>
 
@@ -71,6 +72,10 @@ else
         </button>
         <button type="button" class="btn btn-secondary" @onclick="Cancel">Cancel</button>
         <a href="/stories/read/@Id" class="btn btn-info">Read Story</a>
+        @if (IsCreator)
+        {
+            <button type="button" class="btn btn-danger" @onclick="ShowArchiveConfirm">Archive Story</button>
+        }
     </EditForm>
 
     
@@ -162,6 +167,25 @@ else
     }
 }
 
+@* Archive Confirmation Modal *@
+<div class="modal fade" id="archiveConfirmModal" tabindex="-1" aria-labelledby="archiveConfirmLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title fs-5" id="archiveConfirmLabel">Archive Story</h1>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to archive this story? Archived stories will not be visible in your story list or to other users.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-danger" @onclick="ArchiveStory" data-bs-dismiss="modal">Yes, Archive It</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 @code {
     [Parameter]
     public int Id { get; set; }
@@ -170,6 +194,7 @@ else
     private bool Loading = true;
     private bool NotFound = false;
     private bool Authorized = false;
+    private bool IsCreator = false;
     private string? message;
 
     [SupplyParameterFromForm(FormName = "edit-story")]
@@ -203,6 +228,7 @@ else
 
             var userId = user.Id;
             Authorized = StoryEntity.CreatedBy.Id == userId || StoryEntity.Contributors.Any(c => c.Id == userId);
+            IsCreator = StoryEntity.CreatedBy.Id == userId;
 
             if (!Authorized)
             {
@@ -471,5 +497,54 @@ else
     private void Cancel()
     {
         NavigationManager.NavigateTo("/stories");
+    }
+
+    private async Task ShowArchiveConfirm()
+    {
+        // Show the confirmation modal using Bootstrap
+        await JS.InvokeVoidAsync("showModal", "archiveConfirmModal");
+    }
+
+    private async Task ArchiveStory()
+    {
+        if (StoryEntity is null)
+        {
+            message = "Error: story not loaded.";
+            return;
+        }
+
+        try
+        {
+            var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+            var user = await UserManager.GetUserAsync(authState.User);
+
+            if (user is null)
+            {
+                message = "Error: unable to load current user.";
+                return;
+            }
+
+            // Only creator can archive
+            if (StoryEntity.CreatedBy.Id != user.Id)
+            {
+                message = "Error: only the story creator can archive.";
+                return;
+            }
+
+            StoryEntity.IsArchived = true;
+            StoryEntity.LastModifiedAt = DateTime.UtcNow;
+            await DbContext.SaveChangesAsync();
+
+            message = "Story archived successfully.";
+            
+            // Navigate away after a short delay
+            await Task.Delay(1500);
+            NavigationManager.NavigateTo("/stories");
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error archiving story {StoryId}", Id);
+            message = "Error archiving story.";
+        }
     }
 }

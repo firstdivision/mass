@@ -77,7 +77,7 @@ else
             Stories = await DbContext.Stories
                 .Include(s => s.CreatedBy)
                 //.Include(s => s.Contributors)
-                .Where(s => s.CreatedBy.Id == userId || s.Contributors.Any(c => c.Id == userId))
+                .Where(s => (s.CreatedBy.Id == userId || s.Contributors.Any(c => c.Id == userId)) && !s.IsArchived)
                 .OrderByDescending(s => s.LastModifiedAt)
                 .AsNoTracking()
                 .ToListAsync();

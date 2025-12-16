@@ -11,6 +11,7 @@ namespace mass.Data
         public required string Title { get; set; }
         public required string Description { get; set; }
         public bool IsPublic { get; set; }
+        public bool IsArchived { get; set; }
         public DateTimeOffset CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTimeOffset LastModifiedAt { get; set; } = DateTime.UtcNow;
 

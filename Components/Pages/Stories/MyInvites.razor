@@ -216,7 +216,7 @@ else
 
 			OwnedStories = await DbContext.Stories
 				.Include(s => s.Contributors)
-				.Where(s => s.CreatedBy.Id == user.Id)
+			.Where(s => s.CreatedBy.Id == user.Id && !s.IsArchived)
 				.OrderByDescending(s => s.LastModifiedAt)
 				.ToListAsync();
 		}

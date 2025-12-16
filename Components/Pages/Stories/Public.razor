@@ -50,7 +50,7 @@ else
         {
             Stories = await DbContext.Stories
                 .Include(s => s.CreatedBy)
-                .Where(s => s.IsPublic)
+                .Where(s => s.IsPublic && !s.IsArchived)
                 .OrderByDescending(s => s.LastModifiedAt)
                 .AsNoTracking()
                 .ToListAsync();
