@@ -1,0 +1,82 @@
+@page "/stories/read/{Id:int}"
+
+@using Microsoft.EntityFrameworkCore
+@using mass.Data
+@inject MassDbContext DbContext
+@inject NavigationManager NavigationManager
+@inject ILogger<Read> Logger
+
+@attribute [Layout(typeof(MainLayout))]
+
+@if (IsLoading)
+{
+    <p><em>Loading...</em></p>
+}
+else if (Story is null)
+{
+    <p class="alert alert-warning">Story not found.</p>
+}
+else
+{
+    <article class="reading-mode">
+        <header>
+            <h1>@Story.Title</h1>
+            <p class="lead">@Story.Description</p>
+            <p class="text-muted">By @Story.CreatedBy?.UserName &middot; Last modified @Story.LastModifiedAt.ToLocalTime().ToString("g")</p>
+            <hr />
+        </header>
+
+        @foreach (var chapter in Story.Chapters.OrderBy(c => c.Order))
+        {
+            <section class="chapter">
+                <h2>@chapter.Title</h2>
+                @foreach (var entry in chapter.Entries.OrderBy(e => e.Order))
+                {
+                    <div class="entry">
+                        <p>@entry.Content</p>
+                    </div>
+                }
+            </section>
+        }
+    </article>
+}
+
+@code {
+    [Parameter]
+    public int Id { get; set; }
+
+    private Story? Story;
+    private bool IsLoading = true;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        IsLoading = true;
+
+        try
+        {
+            Story = await DbContext.Stories
+                .Include(s => s.CreatedBy)
+                .Include(s => s.Chapters)
+                    .ThenInclude(c => c.Entries)
+                .AsNoTracking()
+                .FirstOrDefaultAsync(s => s.Id == Id);
+
+            if (Story is null || !Story.IsPublic)
+            {
+                // Not found or not public
+                NavigationManager.NavigateTo("/not-found");
+                return;
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error loading story {StoryId}", Id);
+            NavigationManager.NavigateTo("/not-found");
+            return;
+        }
+        finally
+        {
+            IsLoading = false;
+        }
+    }
+}
