@@ -5,6 +5,7 @@ using mass.Components;
 using mass.Components.Account;
 using mass.Data;
 using Microsoft.AspNetCore.DataProtection;
+using Microsoft.AspNetCore.HttpOverrides;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -91,10 +92,14 @@ else
 }
 
 //add useforwarded headers to support reverse proxy scenarios
-app.UseForwardedHeaders(new ForwardedHeadersOptions
-{
-    ForwardedHeaders = Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders.XForwardedProto
-});
+var forwardedOpts = new ForwardedHeadersOptions {
+    ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
+};
+// in container/proxy setups it's common to clear KnownNetworks/Proxies:
+forwardedOpts.KnownIPNetworks.Clear();
+forwardedOpts.KnownProxies.Clear();
+
+app.UseForwardedHeaders(forwardedOpts); // BEFORE authentication middleware
 
 app.UseStatusCodePagesWithReExecute("/not-found", createScopeForStatusCodePages: true);
 //app.UseHttpsRedirection();
