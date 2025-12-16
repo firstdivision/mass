@@ -13,5 +13,8 @@ postgres:
 migration:
 	dotnet ef migrations add $(name) --output-dir Data/Migrations
 
+migration-sql:
+	dotnet ef migrations script --output migrate.sql --idempotent
+
 watch:
 	bash ./dotnet-watch.sh
