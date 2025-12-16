@@ -445,6 +445,52 @@ namespace mass.Data.Migrations
                     b.ToTable("stories", (string)null);
                 });
 
+            modelBuilder.Entity("mass.Data.StoryInvite", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTimeOffset?>("AcceptedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("accepted_at");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("InvitedById")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("invited_by_id");
+
+                    b.Property<string>("InvitedUserId")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("invited_user_id");
+
+                    b.Property<int>("StoryId")
+                        .HasColumnType("integer")
+                        .HasColumnName("story_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_story_invites");
+
+                    b.HasIndex("InvitedById")
+                        .HasDatabaseName("ix_story_invites_invited_by_id");
+
+                    b.HasIndex("InvitedUserId")
+                        .HasDatabaseName("ix_story_invites_invited_user_id");
+
+                    b.HasIndex("StoryId")
+                        .HasDatabaseName("ix_story_invites_story_id");
+
+                    b.ToTable("story_invites", (string)null);
+                });
+
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
                 {
                     b.HasOne("mass.Data.MassApplicationRole", null)
@@ -571,6 +617,36 @@ namespace mass.Data.Migrations
                         .HasConstraintName("fk_stories_asp_net_users_created_by_id");
 
                     b.Navigation("CreatedBy");
+                });
+
+            modelBuilder.Entity("mass.Data.StoryInvite", b =>
+                {
+                    b.HasOne("mass.Data.MassIdentityUser", "InvitedBy")
+                        .WithMany()
+                        .HasForeignKey("InvitedById")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_story_invites_mass_identity_user_invited_by_id");
+
+                    b.HasOne("mass.Data.MassIdentityUser", "InvitedUser")
+                        .WithMany()
+                        .HasForeignKey("InvitedUserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_story_invites_mass_identity_user_invited_user_id");
+
+                    b.HasOne("mass.Data.Story", "Story")
+                        .WithMany()
+                        .HasForeignKey("StoryId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_story_invites_stories_story_id");
+
+                    b.Navigation("InvitedBy");
+
+                    b.Navigation("InvitedUser");
+
+                    b.Navigation("Story");
                 });
 
             modelBuilder.Entity("mass.Data.Chapter", b =>

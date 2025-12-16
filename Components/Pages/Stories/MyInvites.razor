@@ -1,4 +1,5 @@
 @page "/stories/invites"
+@rendermode InteractiveServer
 
 @using Microsoft.AspNetCore.Authorization
 @using Microsoft.AspNetCore.Identity
@@ -53,6 +54,67 @@ else
 
 <hr />
 
+<h2>Send Invite</h2>
+
+<div class="card mb-3">
+	<div class="card-body">
+		<div class="mb-3">
+			<label class="form-label">Search user</label>
+			<div class="input-group">
+				<input class="form-control" @bind="recipientQuery" placeholder="username or email" />
+				<button class="btn btn-outline-secondary" @onclick="SearchUsersAsync" disabled="@IsSearching">Search</button>
+			</div>
+		</div>
+
+		@if (SearchResults is not null)
+		{
+			<ul class="list-group mb-3">
+				@foreach (var u in SearchResults)
+				{
+					<li class="list-group-item d-flex justify-content-between align-items-center">
+						<div>
+							<strong>@u.UserName</strong>
+							<small class="text-muted ms-2">@u.Email</small>
+						</div>
+						<div>
+							<button class="btn btn-sm btn-outline-primary" @onclick="() => SelectUser(u.Id)">Select</button>
+						</div>
+					</li>
+				}
+			</ul>
+		}
+
+		@if (SelectedUser is not null)
+		{
+			<div class="mb-3">
+				<strong>Recipient:</strong> @SelectedUser.UserName <small class="text-muted ms-2">@SelectedUser.Email</small>
+				<button class="btn btn-sm btn-link" @onclick="ClearSelectedUser">Change</button>
+			</div>
+		}
+
+		<div class="mb-3">
+			<label class="form-label">Select your story</label>
+			<select class="form-select" @bind="SelectedStoryId">
+				<option value="0">Choose a story...</option>
+				@foreach (var s in OwnedStories ?? Enumerable.Empty<Story>())
+				{
+					<option value="@s.Id">@s.Title</option>
+				}
+			</select>
+		</div>
+
+		<div>
+			<button class="btn btn-primary" @onclick="SendInviteAsync" disabled="@IsSending || SelectedUser is null || SelectedStoryId == 0">Send Invite</button>
+			@if (!string.IsNullOrEmpty(SendMessage))
+			{
+				<div class="mt-2 alert alert-info">@SendMessage</div>
+			}
+		</div>
+	</div>
+</div>
+
+<hr />
+
 <h2>My Sent Invites</h2>
 
 @if (SentInvites is null)
@@ -97,7 +159,17 @@ else
 @code {
 	private List<StoryInvite>? Invites;
 	private List<StoryInvite>? SentInvites;
+	private List<Story>? OwnedStories;
 	private HashSet<int> processingIds = new();
+
+	// Send invite form state
+	private string? recipientQuery;
+	private List<MassIdentityUser>? SearchResults;
+	private MassIdentityUser? SelectedUser;
+	private int SelectedStoryId = 0;
+	private bool IsSearching = false;
+	private bool IsSending = false;
+	private string? SendMessage;
 
 	protected override async Task OnInitializedAsync()
 	{
@@ -135,12 +207,159 @@ else
 				.Where(si => si.InvitedBy.Id == user.Id)
 				.OrderByDescending(si => si.CreatedAt)
 				.ToListAsync();
+
+			OwnedStories = await DbContext.Stories
+				.Include(s => s.Contributors)
+				.Where(s => s.CreatedBy.Id == user.Id)
+				.OrderByDescending(s => s.LastModifiedAt)
+				.ToListAsync();
 		}
 		catch (Exception ex)
 		{
 			Logger.LogError(ex, "Error loading invites for user {UserId}", user.Id);
 			Invites = new List<StoryInvite>();
 			SentInvites = new List<StoryInvite>();
+			OwnedStories = new List<Story>();
+		}
+	}
+
+	private async Task SearchUsersAsync()
+	{
+		if (string.IsNullOrWhiteSpace(recipientQuery))
+		{
+			SearchResults = new List<MassIdentityUser>();
+			return;
+		}
+
+		IsSearching = true;
+		StateHasChanged();
+
+		try
+		{
+			var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+			var user = await UserManager.GetUserAsync(authState.User);
+
+			var q = recipientQuery!.Trim();
+			SearchResults = await DbContext.MassIdentityUsers
+				.Where(u => (u.UserName != null && u.UserName.Contains(q)) || (u.Email != null && u.Email.Contains(q)))
+				.Where(u => user == null || u.Id != user.Id)
+				.OrderBy(u => u.UserName)
+				.Take(10)
+				.ToListAsync();
+		}
+		catch (Exception ex)
+		{
+			Logger.LogError(ex, "Error searching users");
+			SearchResults = new List<MassIdentityUser>();
+		}
+		finally
+		{
+			IsSearching = false;
+			StateHasChanged();
+		}
+	}
+
+	private void ClearSearch()
+	{
+		recipientQuery = null;
+		SearchResults = null;
+	}
+
+	private void SelectUser(string id)
+	{
+		SelectedUser = SearchResults?.FirstOrDefault(u => u.Id == id);
+		SearchResults = null;
+		recipientQuery = null;
+	}
+
+	private void ClearSelectedUser()
+	{
+		SelectedUser = null;
+	}
+
+	private async Task SendInviteAsync()
+	{
+		if (SelectedUser is null || SelectedStoryId == 0)
+		{
+			SendMessage = "Please select a recipient and one of your stories.";
+			return;
+		}
+
+		IsSending = true;
+		SendMessage = null;
+		StateHasChanged();
+
+		try
+		{
+			var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+			var user = await UserManager.GetUserAsync(authState.User);
+			if (user is null)
+			{
+				SendMessage = "Unable to determine current user.";
+				return;
+			}
+
+			if (SelectedUser.Id == user.Id)
+			{
+				SendMessage = "You cannot invite yourself.";
+				return;
+			}
+
+			var story = OwnedStories?.FirstOrDefault(s => s.Id == SelectedStoryId);
+			if (story is null)
+			{
+				SendMessage = "Selected story was not found or you don't own it.";
+				return;
+			}
+
+			// check if already a contributor
+			if (story.Contributors.Any(c => c.Id == SelectedUser.Id))
+			{
+				SendMessage = "That user is already a contributor to the story.";
+				return;
+			}
+
+			// check for existing invite
+			var exists = await DbContext.StoryInvites.AnyAsync(si => si.Story.Id == SelectedStoryId && si.InvitedUser.Id == SelectedUser.Id);
+			if (exists)
+			{
+				SendMessage = "An invite to that user for this story already exists.";
+				return;
+			}
+
+			var invitedDbUser = await DbContext.MassIdentityUsers.FindAsync(SelectedUser.Id!);
+			var storyDb = await DbContext.Stories.FindAsync(SelectedStoryId);
+			if (invitedDbUser is null || storyDb is null)
+			{
+				SendMessage = "Unable to create invite due to missing data.";
+				return;
+			}
+
+			var invite = new StoryInvite
+			{
+				Story = storyDb,
+				InvitedUser = invitedDbUser,
+				InvitedBy = user,
+				CreatedAt = DateTimeOffset.UtcNow
+			};
+
+			DbContext.StoryInvites.Add(invite);
+			await DbContext.SaveChangesAsync();
+
+			SendMessage = "Invite sent.";
+			SelectedUser = null;
+			SelectedStoryId = 0;
+			await LoadInvitesAsync();
+		}
+		catch (Exception ex)
+		{
+			Logger.LogError(ex, "Error sending invite");
+			SendMessage = "Error sending invite.";
+		}
+		finally
+		{
+			IsSending = false;
+			StateHasChanged();
 		}
 	}
 
