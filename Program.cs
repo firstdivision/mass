@@ -104,8 +104,6 @@ app.UseForwardedHeaders(forwardedOpts); // BEFORE authentication middleware
 app.UseStatusCodePagesWithReExecute("/not-found", createScopeForStatusCodePages: true);
 //app.UseHttpsRedirection();
 
-app.UseAntiforgery();
-
 app.UseCookiePolicy(new CookiePolicyOptions
 {
     MinimumSameSitePolicy = SameSiteMode.Lax,
@@ -117,6 +115,8 @@ app.MapStaticAssets();
 
 app.UseAuthentication();
 app.UseAuthorization();
+
+app.UseAntiforgery();
 
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
