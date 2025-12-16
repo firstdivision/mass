@@ -51,6 +51,11 @@ else
             <ValidationMessage For="() => Input.Description" class="text-danger" />
         </div>
 
+        <div class="form-floating mb-3">
+            <InputCheckbox @bind-Value="Input.IsPublic" id="Input.IsPublic" />
+            <label for="Input.IsPublic">Is Public</label>
+            <ValidationMessage For="() => Input.IsPublic" class="text-danger" />
+        </div>
         <button type="submit" class="w-100 btn btn-lg btn-primary">Save</button>
     </EditForm>
 
@@ -148,7 +153,7 @@ else
     private string? message;
 
     [SupplyParameterFromForm(FormName = "edit-story")]
-    private InputModel Input { get; set; } = new();
+    private InputModel? Input { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
@@ -166,7 +171,7 @@ else
         {
             StoryEntity = await DbContext.Stories
                 .Include(s => s.CreatedBy)
-                .Include(s => s.Contributors)
+                //.Include(s => s.Contributors)
                 .Include(s => s.Chapters).ThenInclude(c => c.Entries).ThenInclude(e => e.CreatedBy)
                 .SingleOrDefaultAsync(s => s.Id == Id);
 
@@ -184,9 +189,14 @@ else
                 return;
             }
 
-            Input.Title ??= StoryEntity.Title;
-            Input.Description ??= StoryEntity.Description;
-            Input.IsPublic = StoryEntity.IsPublic;
+            if (Input is null)
+            {
+                Input = new InputModel();
+                Input.Title ??= StoryEntity.Title;
+                Input.Description ??= StoryEntity.Description;
+                Input.IsPublic = StoryEntity.IsPublic;
+            }
+
         }
         catch (Exception ex)
         {
@@ -242,6 +252,7 @@ else
         {
             StoryEntity.Title = Input.Title;
             StoryEntity.Description = Input.Description;
+            StoryEntity.IsPublic = Input.IsPublic;
             StoryEntity.LastModifiedAt = DateTime.UtcNow;
 
             await DbContext.SaveChangesAsync();
