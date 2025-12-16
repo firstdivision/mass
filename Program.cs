@@ -26,12 +26,25 @@ builder.Services.AddCascadingAuthenticationState();
 builder.Services.AddScoped<IdentityRedirectManager>();
 builder.Services.AddScoped<AuthenticationStateProvider, IdentityRevalidatingAuthenticationStateProvider>();
 
+var GCP_CLIENT_ID = Environment.GetEnvironmentVariable("GCP_CLIENT_ID");
+var GCP_CLIENT_SECRET = Environment.GetEnvironmentVariable("GCP_CLIENT_SECRET");
+
+// Make sure GCP credentials are not null
+if (string.IsNullOrEmpty(GCP_CLIENT_ID) || string.IsNullOrEmpty(GCP_CLIENT_SECRET))
+{
+    throw new InvalidOperationException("Google Client ID or Client Secret is not set in environment variables.");
+}   
+
 builder.Services.AddAuthentication(options =>
     {
         options.DefaultScheme = IdentityConstants.ApplicationScheme;
         options.DefaultSignInScheme = IdentityConstants.ExternalScheme;
     })
-    .AddIdentityCookies();
+    .AddGoogle(googleOptions =>
+    {
+        googleOptions.ClientId = GCP_CLIENT_ID;
+        googleOptions.ClientSecret = GCP_CLIENT_SECRET;
+    }).AddIdentityCookies();
 
 var connectionString = Environment.GetEnvironmentVariable("DB_CONNECTION");
 
