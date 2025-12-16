@@ -51,12 +51,24 @@ else
             <ValidationMessage For="() => Input.Description" class="text-danger" />
         </div>
 
-        <div class="form-floating mb-3">
-            <InputCheckbox @bind-Value="Input.IsPublic" id="Input.IsPublic" />
-            <label for="Input.IsPublic">Is Public</label>
-            <ValidationMessage For="() => Input.IsPublic" class="text-danger" />
-        </div>
-        <button type="submit" class="w-100 btn btn-lg btn-primary">Save</button>
+        <div class="mb-3">
+  <div class="form-check form-switch">
+    <InputCheckbox class="form-check-input" @bind-Value="Input.IsPublic" id="Input.IsPublic" />
+    <label class="form-check-label" for="Input.IsPublic">Public</label>
+  </div>
+  <ValidationMessage For="() => Input.IsPublic" class="text-danger" />
+</div>
+        <button type="submit" class="w-100 btn btn-lg btn-primary" disabled="@Saving">
+  @if (Saving)
+  {
+      <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true">Saving…</span> 
+  }
+  else
+  {
+      <span>Save</span>
+  }
+</button>
+<button type="button" class="btn btn-link" @onclick="Cancel">Cancel</button>
     </EditForm>
 
     
@@ -68,29 +80,36 @@ else
     <hr />
     <h2>Chapters</h2>
 
-    @foreach (var chapter in StoryEntity.Chapters.OrderBy(c => c.Order))
-    {
-        <div class="card mb-3">
-            <div class="card-body">
-                <h3 class="card-title">@chapter.Order - @chapter.Title</h3>
-
-                @if (chapter.Entries?.Any() == true)
-                {
-                    @foreach (var entry in chapter.Entries.OrderBy(e => e.Order))
-                    {
-                        <div class="mb-3">
-                            <div class="small text-muted">By @entry.CreatedBy?.UserName on @entry.CreatedAt.ToLocalTime().ToString("g")</div>
-                            <p class="p-3 bg-light border rounded">@FormatContent(entry.Content)</p>
-                        </div>
-                    }
-                }
-                else
-                {
-                    <div class="text-muted">No entries yet.</div>
-                }
-            </div>
-        </div>
-    }
+    <div class="accordion" id="chaptersAccordion">
+@foreach (var chapter in StoryEntity.Chapters.OrderBy(c => c.Order))
+{
+  <div class="accordion-item">
+    <h2 class="accordion-header" id="heading@chapter.Id">
+      <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse@chapter.Id" aria-expanded="false">
+        @chapter.Order - @chapter.Title
+      </button>
+    </h2>
+    <div id="collapse@chapter.Id" class="accordion-collapse collapse" data-bs-parent="#chaptersAccordion">
+      <div class="accordion-body">
+        @if (chapter.Entries?.Any() == true)
+        {
+            @foreach (var entry in chapter.Entries.OrderBy(e => e.Order))
+            {
+                <div class="mb-3">
+                    <div class="small text-muted">By @entry.CreatedBy?.UserName on @entry.CreatedAt.ToLocalTime().ToString("g")</div>
+                    <p class="p-3 bg-light border rounded">@FormatContent(entry.Content)</p>
+                </div>
+            }
+        }
+        else
+        {
+            <div class="text-muted">No entries yet.</div>
+        }
+      </div>
+    </div>
+  </div>
+}
+</div>
 }
 
 @* Add entry / New chapter forms *@
@@ -222,51 +241,57 @@ else
         public bool IsPublic { get; set; }
     }
 
+    private bool Adding = false;
+    private bool Saving = false;
+
     private async Task Save(EditContext context)
     {
-        if (StoryEntity is null)
-        {
-            message = "Error: story not loaded.";
-            return;
-        }
+        Saving = true;
+        try {
+            if (StoryEntity is null)
+            {
+                message = "Error: story not loaded.";
+                return;
+            }
 
-        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
-        var user = await UserManager.GetUserAsync(authState.User);
+            var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+            var user = await UserManager.GetUserAsync(authState.User);
 
-        if (user is null)
-        {
-            message = "Error: unable to load current user.";
-            return;
-        }
+            if (user is null)
+            {
+                message = "Error: unable to load current user.";
+                return;
+            }
 
-        var userId = user.Id;
-        var isAuthorized = StoryEntity.CreatedBy.Id == userId || StoryEntity.Contributors.Any(c => c.Id == userId);
+            var userId = user.Id;
+            var isAuthorized = StoryEntity.CreatedBy.Id == userId || StoryEntity.Contributors.Any(c => c.Id == userId);
 
-        if (!isAuthorized)
-        {
-            message = "Error: you are not authorized to edit this story.";
-            return;
-        }
+            if (!isAuthorized)
+            {
+                message = "Error: you are not authorized to edit this story.";
+                return;
+            }
 
-        try
-        {
-            StoryEntity.Title = Input.Title;
-            StoryEntity.Description = Input.Description;
-            StoryEntity.IsPublic = Input.IsPublic;
-            StoryEntity.LastModifiedAt = DateTime.UtcNow;
+            try
+            {
+                StoryEntity.Title = Input.Title;
+                StoryEntity.Description = Input.Description;
+                StoryEntity.IsPublic = Input.IsPublic;
+                StoryEntity.LastModifiedAt = DateTime.UtcNow;
 
-            await DbContext.SaveChangesAsync();
+                await DbContext.SaveChangesAsync();
 
-            NavigationManager.NavigateTo("/stories");
-        }
-        catch (Exception ex)
-        {
-            Logger.LogError(ex, "Error saving story {StoryId}", Id);
-            message = "Error saving story.";
+                NavigationManager.NavigateTo("/stories");
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "Error saving story {StoryId}", Id);
+                message = "Error saving story.";
+            }
+        } finally {
+            Saving = false;
         }
     }
-
-    private bool Adding = false;
 
     [SupplyParameterFromForm(FormName = "add-entry")]
     private AddEntryModel AddEntryInput { get; set; } = new();
@@ -434,5 +459,10 @@ else
         var encoded = WebUtility.HtmlEncode(content ?? "");
         var withBreaks = encoded.Replace("\r\n", "<br/>").Replace("\n", "<br/>");
         return (MarkupString)withBreaks;
+    }
+
+    private void Cancel()
+    {
+        NavigationManager.NavigateTo("/stories");
     }
 }
