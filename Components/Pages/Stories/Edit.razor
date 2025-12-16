@@ -81,35 +81,35 @@ else
     <hr />
     <h2>Chapters</h2>
 
-    <div class="accordion" id="chaptersAccordion">
-@foreach (var chapter in StoryEntity.Chapters.OrderBy(c => c.Order))
-{
-  <div class="accordion-item">
-    <h2 class="accordion-header" id="heading@chapter.Id">
-      <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse@chapter.Id" aria-expanded="false">
-        @chapter.Order - @chapter.Title
-      </button>
-    </h2>
-    <div id="collapse@chapter.Id" class="accordion-collapse collapse" data-bs-parent="#chaptersAccordion">
-      <div class="accordion-body">
-        @if (chapter.Entries?.Any() == true)
-        {
-            @foreach (var entry in chapter.Entries.OrderBy(e => e.Order))
-            {
-                <div class="mb-3">
-                    <div class="small text-muted">By @entry.CreatedBy?.UserName on @entry.CreatedAt.ToLocalTime().ToString("g")</div>
-                    <p class="p-3 bg-light border rounded">@FormatContent(entry.Content)</p>
+<div class="accordion" id="chaptersAccordion">
+    @foreach (var chapter in StoryEntity.Chapters.OrderBy(c => c.Order))
+    {
+        <div class="accordion-item">
+            <h2 class="accordion-header" id="@(chapter.Id + "headingOne")">
+            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#@(chapter.Id + "collapse")" aria-expanded="true" aria-controls="collapseOne">
+                @chapter.Order - @chapter.Title
+            </button>
+            </h2>
+            <div id="@(chapter.Id + "collapse")" class="accordion-collapse collapse" aria-labelledby="@(chapter.Id + "headingOne")" data-bs-parent="#chaptersAccordion">
+                <div class="accordion-body">
+                    @if (chapter.Entries?.Any() == true)
+                    {
+                        @foreach (var entry in chapter.Entries.OrderBy(e => e.Order))
+                        {
+                            <div class="mb-3">
+                                <div class="small text-muted">By @entry.CreatedBy?.UserName on @entry.CreatedAt.ToLocalTime().ToString("g")</div>
+                                <p class="p-3 bg-light border rounded">@FormatContent(entry.Content)</p>
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <div class="text-muted">No entries yet.</div>
+                    }
                 </div>
-            }
-        }
-        else
-        {
-            <div class="text-muted">No entries yet.</div>
-        }
-      </div>
-    </div>
-  </div>
-}
+            </div>
+        </div>        
+    }
 </div>
 }
 
@@ -117,7 +117,6 @@ else
 @if (!Loading && !NotFound && Authorized)
 {
     <hr />
-    <h2>Add Entry</h2>
 
     <div class="row">
         <div class="col-md-6">
