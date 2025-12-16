@@ -186,6 +186,7 @@ else
 
             Input.Title ??= StoryEntity.Title;
             Input.Description ??= StoryEntity.Description;
+            Input.IsPublic = StoryEntity.IsPublic;
         }
         catch (Exception ex)
         {
@@ -207,6 +208,8 @@ else
         [Required]
         [StringLength(2000, MinimumLength = 1)]
         public string? Description { get; set; }
+
+        public bool IsPublic { get; set; }
     }
 
     private async Task Save(EditContext context)
