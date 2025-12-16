@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using mass.Data;
@@ -11,9 +12,11 @@ using mass.Data;
 namespace mass.Data.Migrations
 {
     [DbContext(typeof(MassDbContext))]
-    partial class MassDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251216015607_AddIsStoryPublic")]
+    partial class AddIsStoryPublic
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
