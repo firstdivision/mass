@@ -58,3 +58,29 @@ h1:focus {
 .form-floating > .form-control-plaintext:focus::placeholder, .form-floating > .form-control:focus::placeholder {
     text-align: start;
 }
+
+/* Reading mode styles for public story pages */
+.reading-mode {
+    max-width: 65ch;
+    margin: 2rem auto;
+    padding: 2rem 1.5rem;
+    font-size: 1.125rem;
+    line-height: 1.8;
+    background: transparent;
+    color: var(--bs-body-color);
+}
+.reading-mode h1 {
+    font-size: 2rem;
+    margin-bottom: 0.25rem;
+}
+.reading-mode .lead {
+    font-size: 1rem;
+    color: var(--bs-secondary-color);
+}
+.reading-mode .chapter {
+    margin-top: 2rem;
+}
+.reading-mode .entry {
+    margin-bottom: 1.25rem;
+    white-space: pre-wrap;
+}
