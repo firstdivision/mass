@@ -1,4 +1,5 @@
 @page "/stories/edit/{Id:int}"
+@rendermode InteractiveServer
 
 @using System.ComponentModel.DataAnnotations
 @using Microsoft.AspNetCore.Authorization
@@ -40,7 +41,7 @@ else
         <ValidationSummary class="text-danger" />
 
         <div class="form-floating mb-3">
-            <InputText @bind-Value="Input.Title" id="Input.Title" class="form-control" placeholder="Story title" />
+            <InputText @bind-Value="Input!.Title" id="Input.Title" class="form-control" placeholder="Story title" />
             <label for="Input.Title">Title</label>
             <ValidationMessage For="() => Input.Title" class="text-danger" />
         </div>
@@ -52,23 +53,23 @@ else
         </div>
 
         <div class="mb-3">
-  <div class="form-check form-switch">
-    <InputCheckbox class="form-check-input" @bind-Value="Input.IsPublic" id="Input.IsPublic" />
-    <label class="form-check-label" for="Input.IsPublic">Public</label>
-  </div>
-  <ValidationMessage For="() => Input.IsPublic" class="text-danger" />
-</div>
-        <button type="submit" class="w-100 btn btn-lg btn-primary" disabled="@Saving">
-  @if (Saving)
-  {
-      <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true">Saving…</span> 
-  }
-  else
-  {
-      <span>Save</span>
-  }
-</button>
-<button type="button" class="btn btn-link" @onclick="Cancel">Cancel</button>
+            <div class="form-check form-switch">
+                <InputCheckbox class="form-check-input" @bind-Value="Input.IsPublic" id="Input.IsPublic" />
+                <label class="form-check-label" for="Input.IsPublic">Public</label>
+            </div>
+            <ValidationMessage For="() => Input.IsPublic" class="text-danger" />
+        </div>
+        <button type="submit" class="btn btn-primary" disabled="@Saving">
+        @if (Saving)
+        {
+            <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true">Saving…</span> 
+        }
+        else
+        {
+            <span>Save</span>
+        }
+        </button>
+        <button type="button" class="btn btn-secondary" @onclick="Cancel">Cancel</button>
     </EditForm>
 
     
@@ -254,6 +255,12 @@ else
                 return;
             }
 
+            if (Input is null || string.IsNullOrEmpty(Input.Title) || string.IsNullOrEmpty(Input.Description))
+            {
+                message = "Error: invalid input.";
+                return;
+            }
+
             var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
             var user = await UserManager.GetUserAsync(authState.User);
 
@@ -274,8 +281,8 @@ else
 
             try
             {
-                StoryEntity.Title = Input.Title;
-                StoryEntity.Description = Input.Description;
+                StoryEntity.Title = Input!.Title!;
+                StoryEntity.Description = Input!.Description!;
                 StoryEntity.IsPublic = Input.IsPublic;
                 StoryEntity.LastModifiedAt = DateTime.UtcNow;
 
@@ -373,7 +380,7 @@ else
                     Order = nextEntryOrder
                 };
 
-                lastChapter.Entries.Add(entry);
+                lastChapter.Entries!.Add(entry);
                 DbContext.Add(entry);
             }
 
@@ -434,7 +441,7 @@ else
             };
 
             chapter.Entries.Add(entry);
-            StoryEntity.Chapters.Add(chapter);
+            StoryEntity.Chapters!.Add(chapter);
             DbContext.Add(chapter);
 
             StoryEntity.LastModifiedAt = DateTime.UtcNow;
