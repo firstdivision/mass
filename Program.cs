@@ -97,7 +97,7 @@ app.UseForwardedHeaders(new ForwardedHeadersOptions
 });
 
 app.UseStatusCodePagesWithReExecute("/not-found", createScopeForStatusCodePages: true);
-app.UseHttpsRedirection();
+//app.UseHttpsRedirection();
 
 app.UseAntiforgery();
 
