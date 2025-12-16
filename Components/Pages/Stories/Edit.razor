@@ -41,54 +41,65 @@ else if (!Authorized)
 }
 else
 {
-    <EditForm Model="Input" OnValidSubmit="Save" method="post" FormName="edit-story">
-        <DataAnnotationsValidator />
-        <ValidationSummary class="text-danger" />
+    <div class="accordion mb-4" id="editAccordion">
+        <div class="accordion-item">
+            <h2 class="accordion-header">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#editForm" aria-expanded="false" aria-controls="editForm">
+                    Edit Story Details
+                </button>
+            </h2>
+            <div id="editForm" class="accordion-collapse collapse" data-bs-parent="#editAccordion">
+                <div class="accordion-body">
+                    <EditForm Model="Input" OnValidSubmit="Save" method="post" FormName="edit-story">
+                        <DataAnnotationsValidator />
+                        <ValidationSummary class="text-danger" />
 
-        <div class="form-floating mb-3">
-            <InputText @bind-Value="Input!.Title" id="Input.Title" class="form-control" placeholder="Story title" />
-            <label for="Input.Title">Title</label>
-            <ValidationMessage For="() => Input.Title" class="text-danger" />
-        </div>
+                        <div class="form-floating mb-3">
+                            <InputText @bind-Value="Input!.Title" id="Input.Title" class="form-control" placeholder="Story title" />
+                            <label for="Input.Title">Title</label>
+                            <ValidationMessage For="() => Input.Title" class="text-danger" />
+                        </div>
 
-        <div class="form-floating mb-3">
-            <InputTextArea @bind-Value="Input.Description" id="Input.Description" class="form-control" placeholder="Short description" rows="4" />
-            <label for="Input.Description">Description</label>
-            <ValidationMessage For="() => Input.Description" class="text-danger" />
-        </div>
+                        <div class="form-floating mb-3">
+                            <InputTextArea @bind-Value="Input.Description" id="Input.Description" class="form-control" placeholder="Short description" rows="4" />
+                            <label for="Input.Description">Description</label>
+                            <ValidationMessage For="() => Input.Description" class="text-danger" />
+                        </div>
 
-        <div class="mb-3">
-            <div class="form-check form-switch">
-                <InputCheckbox class="form-check-input" @bind-Value="Input.IsPublic" id="Input.IsPublic" />
-                <label class="form-check-label" for="Input.IsPublic">Public</label>
-            </div>
-            <ValidationMessage For="() => Input.IsPublic" class="text-danger" />
-        </div>
-        @if (IsCreator)
-        {
-            <div class="mb-3">
-                <div class="form-check form-switch">
-                    <InputCheckbox class="form-check-input" @bind-Value="Input.IsArchived" id="Input.IsArchived" />
-                    <label class="form-check-label" for="Input.IsArchived">Archived</label>
+                        <div class="mb-3">
+                            <div class="form-check form-switch">
+                                <InputCheckbox class="form-check-input" @bind-Value="Input.IsPublic" id="Input.IsPublic" />
+                                <label class="form-check-label" for="Input.IsPublic">Public</label>
+                            </div>
+                            <ValidationMessage For="() => Input.IsPublic" class="text-danger" />
+                        </div>
+                        @if (IsCreator)
+                        {
+                            <div class="mb-3">
+                                <div class="form-check form-switch">
+                                    <InputCheckbox class="form-check-input" @bind-Value="Input.IsArchived" id="Input.IsArchived" />
+                                    <label class="form-check-label" for="Input.IsArchived">Archived</label>
+                                </div>
+                                <ValidationMessage For="() => Input.IsArchived" class="text-danger" />
+                            </div>
+                        }
+                        <button type="submit" class="btn btn-primary" disabled="@Saving">
+                        @if (Saving)
+                        {
+                            <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true">Saving…</span> 
+                        }
+                        else
+                        {
+                            <span>Save</span>
+                        }
+                        </button>
+                        <button type="button" class="btn btn-secondary" @onclick="Cancel">Cancel</button>
+                        <a href="/stories/read/@Id" class="btn btn-info">Read Story</a>
+                    </EditForm>
                 </div>
-                <ValidationMessage For="() => Input.IsArchived" class="text-danger" />
             </div>
-        }
-        <button type="submit" class="btn btn-primary" disabled="@Saving">
-        @if (Saving)
-        {
-            <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true">Saving…</span> 
-        }
-        else
-        {
-            <span>Save</span>
-        }
-        </button>
-        <button type="button" class="btn btn-secondary" @onclick="Cancel">Cancel</button>
-        <a href="/stories/read/@Id" class="btn btn-info">Read Story</a>
-    </EditForm>
-
-    
+        </div>
+    </div>
 }
 
 @* Chapters & Entries (read-only) *@
