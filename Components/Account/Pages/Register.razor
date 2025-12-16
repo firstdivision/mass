@@ -20,12 +20,22 @@
 <h1>Register</h1>
 
 <div class="row">
+    <div class="col-lg-4 col-lg-offset-2">
+        <section>
+            <h3>...With Google</h3>
+            <p>This is the easiest way to login and create an account.</p>
+            <ExternalLoginPicker />
+        </section>
+    </div>
+</div>
+
+<div class="row">
     <div class="col-lg-6">
         <StatusMessage Message="@Message" />
         <EditForm Model="Input" method="post" OnValidSubmit="RegisterUser" FormName="register">
             <DataAnnotationsValidator />
-            <h2>Create a new account.</h2>
             <hr />
+            <h6>Or go old-school and create an account with a password:</h6>
             <ValidationSummary class="text-danger" role="alert" />
             <div class="form-floating mb-3">
                 <InputText @bind-Value="Input.Email" id="Input.Email" class="form-control" autocomplete="username" aria-required="true" placeholder="name@example.com" />
@@ -44,13 +54,6 @@
             </div>
             <button type="submit" class="w-100 btn btn-lg btn-primary">Register</button>
         </EditForm>
-    </div>
-    <div class="col-lg-4 col-lg-offset-2">
-        <section>
-            <h3>Use another service to register.</h3>
-            <hr />
-            <ExternalLoginPicker />
-        </section>
     </div>
 </div>
 
