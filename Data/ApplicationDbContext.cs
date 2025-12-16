@@ -15,6 +15,7 @@ public class MassDbContext : IdentityDbContext<MassIdentityUser, MassApplication
     }
 
     public DbSet<Story> Stories { get; set; } = null!;
+    public DbSet<StoryInvite> StoryInvites { get; set; } = null!;
     public DbSet<Chapter> Chapters { get; set; } = null!;
     public DbSet<Entry> Entries { get; set; } = null!;
     public DbSet<DataProtectionKey> DataProtectionKeys { get; set; } = null!;
