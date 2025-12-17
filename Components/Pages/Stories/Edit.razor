@@ -238,7 +238,7 @@ else
         {
             StoryEntity = await DbContext.Stories
                 .Include(s => s.CreatedBy)
-                //.Include(s => s.Contributors)
+                .Include(s => s.Contributors)
                 .Include(s => s.Chapters).ThenInclude(c => c.Entries).ThenInclude(e => e.CreatedBy)
                 .SingleOrDefaultAsync(s => s.Id == Id);
 
