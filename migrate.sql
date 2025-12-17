@@ -594,3 +594,42 @@ BEGIN
 END $EF$;
 COMMIT;
 
+START TRANSACTION;
+
+DO $EF$
+BEGIN
+    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "migration_id" = '20251217213302_AddLockFeature') THEN
+    ALTER TABLE stories ADD is_locked boolean NOT NULL DEFAULT FALSE;
+    END IF;
+END $EF$;
+
+DO $EF$
+BEGIN
+    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "migration_id" = '20251217213302_AddLockFeature') THEN
+    ALTER TABLE stories ADD locked_by_id text;
+    END IF;
+END $EF$;
+
+DO $EF$
+BEGIN
+    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "migration_id" = '20251217213302_AddLockFeature') THEN
+    CREATE INDEX ix_stories_locked_by_id ON stories (locked_by_id);
+    END IF;
+END $EF$;
+
+DO $EF$
+BEGIN
+    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "migration_id" = '20251217213302_AddLockFeature') THEN
+    ALTER TABLE stories ADD CONSTRAINT fk_stories_asp_net_users_locked_by_id FOREIGN KEY (locked_by_id) REFERENCES "AspNetUsers" (id) ON DELETE SET NULL;
+    END IF;
+END $EF$;
+
+DO $EF$
+BEGIN
+    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "migration_id" = '20251217213302_AddLockFeature') THEN
+    INSERT INTO "__EFMigrationsHistory" (migration_id, product_version)
+    VALUES ('20251217213302_AddLockFeature', '10.0.1');
+    END IF;
+END $EF$;
+COMMIT;
+
