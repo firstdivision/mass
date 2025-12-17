@@ -47,6 +47,47 @@ else if (!Authorized)
 }
 else
 {
+    @if (IsLocked && !IsLockedByCurrentUser)
+    {
+        <div class="alert alert-warning">
+            <strong>Warning:</strong> This story is currently locked for editing by <strong>@IsLockedByUserName</strong>. 
+            You will need to wait until they have finished editing before you can make changes.
+
+            @if (IsCreator)
+            {
+                <p class="mt-2">
+                    As the creator of this story, you can
+                    <button type="button" @onclick="() => {
+                        StoryEntity!.IsLocked = false;
+                        StoryEntity.LockedBy = null;
+                        DbContext.SaveChanges();
+                        IsLocked = false;
+                    }" class="btn btn-link p-0">Override The Lock</button>
+                    if necessary.
+                </p>
+            }
+        </div>
+    } else if (IsLocked && (IsLockedByCurrentUser || IsCreator)) {
+        <div class="alert alert-success">
+            <p>You have locked this story for editing.  Other users will not be able to make changes until you have finished.</p>
+            <button class="btn btn-warning" @onclick="() => {
+                StoryEntity!.IsLocked = false;
+                StoryEntity.LockedBy = null;
+                DbContext.SaveChanges();
+                IsLocked = false;
+            }">Unlock Story</button>
+        </div>
+    } else {
+        <div class="alert alert-info">
+            <p>This story is not currently locked.  To prevent editing conflicts, you can lock the story for your use while you make changes.</p>
+            <button class="btn btn-primary" @onclick="() => {
+                StoryEntity!.IsLocked = true;
+                StoryEntity.LockedBy = CurrentUser!;
+                DbContext.SaveChanges();
+                IsLocked = true;
+            }">Lock Story for Editing</button>
+        </div>
+    }
     <div class="accordion mb-4" id="editAccordion">
         <div class="accordion-item">
             <h2 class="accordion-header">
@@ -141,7 +182,7 @@ else
                                     <p class="p-3 bg-light border rounded">@FormatContent(entry.Content)</p>
                                     @if (CurrentUser?.Id == entry.CreatedBy?.Id)
                                     {
-                                        <button class="btn btn-sm btn-secondary" @onclick="() => StartEditEntry(entry)">Edit</button>
+                                        <button class="btn btn-sm btn-secondary" disabled=@(!CurrentUserShouldBeAbleToEdit) @onclick="() => StartEditEntry(entry)">Edit</button>
                                     }
                                 }
                             </div>
@@ -159,7 +200,7 @@ else
 }
 
 @* Add entry / New chapter forms *@
-@if (!Loading && !NotFound && Authorized)
+@if (!Loading && !NotFound && Authorized && CurrentUserShouldBeAbleToEdit)
 {
     <hr />
 
@@ -213,6 +254,10 @@ else
     private bool NotFound = false;
     private bool Authorized = false;
     private bool IsCreator = false;
+    private bool IsLocked = false;
+    private bool IsLockedByCurrentUser => CurrentUser != null && StoryEntity?.LockedBy != null && CurrentUser.Id == StoryEntity.LockedBy.Id;
+    private string IsLockedByUserName = "";
+    private bool CurrentUserShouldBeAbleToEdit => Authorized && (!IsLocked || IsLockedByCurrentUser || IsCreator);
     private string? message;
     private int? EditingEntryId;
     private string? EditingEntryContent;
@@ -255,6 +300,12 @@ else
             if (!Authorized)
             {
                 return;
+            }
+
+            IsLocked = StoryEntity.IsLocked;
+            if (IsLocked && StoryEntity.LockedBy != null)
+            {
+                IsLockedByUserName = StoryEntity.LockedBy.UserName ?? "";
             }
 
             if (Input is null)

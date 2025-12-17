@@ -427,6 +427,10 @@ namespace mass.Data.Migrations
                         .HasColumnType("boolean")
                         .HasColumnName("is_archived");
 
+                    b.Property<bool>("IsLocked")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_locked");
+
                     b.Property<bool>("IsPublic")
                         .HasColumnType("boolean")
                         .HasColumnName("is_public");
@@ -434,6 +438,10 @@ namespace mass.Data.Migrations
                     b.Property<DateTimeOffset>("LastModifiedAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("last_modified_at");
+
+                    b.Property<string>("LockedById")
+                        .HasColumnType("text")
+                        .HasColumnName("locked_by_id");
 
                     b.Property<string>("Title")
                         .IsRequired()
@@ -445,6 +453,9 @@ namespace mass.Data.Migrations
 
                     b.HasIndex("CreatedById")
                         .HasDatabaseName("ix_stories_created_by_id");
+
+                    b.HasIndex("LockedById")
+                        .HasDatabaseName("ix_stories_locked_by_id");
 
                     b.ToTable("stories", (string)null);
                 });
@@ -585,7 +596,7 @@ namespace mass.Data.Migrations
                         .HasConstraintName("fk_entries_chapters_chapter_id");
 
                     b.HasOne("mass.Data.MassIdentityUser", "CreatedBy")
-                        .WithMany()
+                        .WithMany("CreatedEntries")
                         .HasForeignKey("CreatedById")
                         .HasConstraintName("fk_entries_mass_identity_user_created_by_id");
 
@@ -624,7 +635,15 @@ namespace mass.Data.Migrations
                         .IsRequired()
                         .HasConstraintName("fk_stories_asp_net_users_created_by_id");
 
+                    b.HasOne("mass.Data.MassIdentityUser", "LockedBy")
+                        .WithMany("LockedStories")
+                        .HasForeignKey("LockedById")
+                        .OnDelete(DeleteBehavior.SetNull)
+                        .HasConstraintName("fk_stories_asp_net_users_locked_by_id");
+
                     b.Navigation("CreatedBy");
+
+                    b.Navigation("LockedBy");
                 });
 
             modelBuilder.Entity("mass.Data.StoryInvite", b =>
@@ -669,7 +688,11 @@ namespace mass.Data.Migrations
 
             modelBuilder.Entity("mass.Data.MassIdentityUser", b =>
                 {
+                    b.Navigation("CreatedEntries");
+
                     b.Navigation("CreatedStories");
+
+                    b.Navigation("LockedStories");
 
                     b.Navigation("UserRoles");
                 });

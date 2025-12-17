@@ -20,6 +20,11 @@
 
 <h1>My Stories</h1>
 
+@if (!string.IsNullOrEmpty(message))
+{
+    <div class="alert alert-info mt-3">@message</div>
+}
+
 <div class="mb-3 d-flex gap-2 align-items-center">
     <a class="btn btn-primary" href="/stories/create">Create new story</a>
     <div class="form-check form-switch">

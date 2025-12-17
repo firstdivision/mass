@@ -12,10 +12,12 @@ namespace mass.Data
         public required string Description { get; set; }
         public bool IsPublic { get; set; }
         public bool IsArchived { get; set; }
+        public bool IsLocked { get; set; }
         public DateTimeOffset CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTimeOffset LastModifiedAt { get; set; } = DateTime.UtcNow;
 
         public required virtual MassIdentityUser CreatedBy { get; set; }
+        public virtual MassIdentityUser? LockedBy { get; set; }
         public virtual ICollection<MassIdentityUser> Contributors { get; set; } = new List<MassIdentityUser>();
         public virtual ICollection<Chapter> Chapters { get; set; } = new List<Chapter>();
     }

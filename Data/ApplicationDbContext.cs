@@ -61,6 +61,14 @@ public class MassDbContext : IdentityDbContext<MassIdentityUser, MassApplication
                     .HasOne<Story>()
                     .WithMany()
                     .HasForeignKey("StoryId")
-                    .OnDelete(DeleteBehavior.Cascade)); 
+                    .OnDelete(DeleteBehavior.Cascade));
+
+        // Add the relationship for Story LockedBy
+        builder.Entity<Story>()
+            .HasOne(s => s.LockedBy)
+            .WithMany(u => u.LockedStories)
+            .HasForeignKey("LockedById")
+            .IsRequired(false)
+            .OnDelete(DeleteBehavior.SetNull);
     }
 }
