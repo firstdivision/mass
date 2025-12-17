@@ -18,15 +18,17 @@
 
 <PageTitle>My Stories</PageTitle>
 
-<h1>My Stories</h1>
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1>My Stories</h1>
+    <a class="btn btn-primary" href="/stories/create">Create new story</a>
+</div>
 
 @if (!string.IsNullOrEmpty(message))
 {
     <div class="alert alert-info mt-3">@message</div>
 }
 
-<div class="mb-3 d-flex gap-2 align-items-center">
-    <a class="btn btn-primary" href="/stories/create">Create new story</a>
+<div class="mb-3">
     <div class="form-check form-switch">
         <input class="form-check-input" type="checkbox" id="includeArchived" @bind:after="OnIncludeArchivedChanged" @bind="IncludeArchived" />
         <label class="form-check-label" for="includeArchived">
@@ -56,6 +58,10 @@ else
                             @if (story.IsArchived)
                             {
                                 <span class="badge bg-secondary">Archived</span>
+                            }
+                            @if (story.IsLocked && story.LockedBy is not null)
+                            {
+                                <span class="badge bg-warning">Locked by: @story.LockedBy.UserName</span>
                             }
                         </div>
                         <p class="card-text">@story.Description</p>
@@ -122,6 +128,7 @@ else
             var query = DbContext.Stories
                 .Include(s => s.CreatedBy)
                 .Include(s => s.Contributors)
+                .Include(s => s.LockedBy)
                 .Where(s => s.CreatedBy.Id == userId || s.Contributors.Any(c => c.Id == userId));
 
             if (!IncludeArchived)
