@@ -61,17 +61,21 @@ else
                             }
                             @if (story.IsLocked && story.LockedBy is not null)
                             {
-                                <span class="badge bg-warning">Locked by: @story.LockedBy.UserName</span>
+                                <span class="badge bg-warning">Locked by: @story.LockedBy</span>
+                            }
+                            @if (story.HasNewEntries)
+                            {
+                                <span class="badge bg-success">New Entries!</span>
                             }
                         </div>
                         <p class="card-text">@story.Description</p>
                         <div class="mt-auto">
                             <div class="mb-2">
-                                <small class="text-muted">By @story.CreatedBy.UserName</small>
+                                <small class="text-muted">By @story.CreatedBy</small>
                                 @if (story.Contributors.Any())
                                 {
                                     <div class="text-muted" style="font-size: 0.875rem;">
-                                        Contributors: @string.Join(", ", story.Contributors.Select(c => c.UserName))
+                                        Contributors: @string.Join(", ", story.Contributors)
                                     </div>
                                 }
                                 else
@@ -96,12 +100,19 @@ else
 }
 
 @code {
-    private List<Story>? Stories;
+    private List<StoryWithNewEntries>? Stories;
     private string? message;
     private bool IncludeArchived = false;
+    private string? currentUserId;
 
     protected override async Task OnInitializedAsync()
     {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = await UserManager.GetUserAsync(authState.User);
+        if (user is not null)
+        {
+            currentUserId = user.Id;
+        }
         await LoadStories();
     }
 
@@ -129,6 +140,7 @@ else
                 .Include(s => s.CreatedBy)
                 .Include(s => s.Contributors)
                 .Include(s => s.LockedBy)
+                .Include(s => s.Chapters).ThenInclude(c => c.Entries).ThenInclude(e => e.CreatedBy)
                 .Where(s => s.CreatedBy.Id == userId || s.Contributors.Any(c => c.Id == userId));
 
             if (!IncludeArchived)
@@ -136,10 +148,32 @@ else
                 query = query.Where(s => !s.IsArchived);
             }
 
-            Stories = await query
+            var storiesWithNewEntries = await query
                 .OrderByDescending(s => s.LastModifiedAt)
                 .AsNoTracking()
+                .Select(s => new StoryWithNewEntries
+                {
+                    Id = s.Id,
+                    Title = s.Title,
+                    Description = s.Description,
+                    IsArchived = s.IsArchived,
+                    IsLocked = s.IsLocked,
+                    LastModifiedAt = s.LastModifiedAt,
+                    CreatedBy = s.CreatedBy.UserName ?? "",
+                    LockedBy = s.LockedBy != null ? s.LockedBy.UserName : null,
+                    Contributors = s.Contributors.Select(c => c.UserName ?? "").ToList(),
+                    HasNewEntries = s.Chapters.SelectMany(c => c.Entries)
+                        .Where(e => e.CreatedBy.Id == userId)
+                        .Max(e => (DateTimeOffset?)e.CreatedAt) != null &&
+                        s.Chapters.SelectMany(c => c.Entries)
+                            .Any(e => e.CreatedAt > s.Chapters.SelectMany(c => c.Entries)
+                                .Where(e2 => e2.CreatedBy.Id == userId)
+                                .Max(e2 => (DateTimeOffset?)e2.CreatedAt) &&
+                                e.CreatedBy.Id != userId)
+                })
                 .ToListAsync();
+
+            Stories = storiesWithNewEntries;
         }
         catch (Exception ex)
         {
@@ -147,4 +181,6 @@ else
             message = "Error loading your stories.";
         }
     }
+
+
 }
