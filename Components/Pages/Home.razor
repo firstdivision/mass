@@ -14,33 +14,10 @@
 <AuthorizeView>
     <Authorized>
         <h1>Welcome back writer!</h1>
-
-        @if (Loading)
-        {
-            <p><em>Loading your stories…</em></p>
-        }
-        else if (UserStories?.Any() != true)
-        {
-            <div class="alert alert-info">You don't have any stories yet. <a href="/stories">Browse stories</a> or start one now.</div>
-        }
-        else
-        {
-            <h2>Your Stories</h2>
-            <ul class="list-group">
-                @foreach (var s in UserStories!)
-                {
-                    <li class="list-group-item d-flex justify-content-between align-items-center">
-                        <div>
-                            <strong>@s.Title</strong>
-                            <div class="small text-muted">Last modified @s.LastModifiedAt.ToLocalTime().ToString("g")</div>
-                        </div>
-                        <div>
-                            <a class="btn btn-sm btn-outline-primary" href="/stories/edit/@s.Id"><span class="bi bi-pencil-fill" aria-hidden="true"></span> Edit</a>
-                        </div>
-                    </li>
-                }
-            </ul>
-        }
+        <p>
+            Go to the <a href="/stories">Stories</a> page to manage and contribute to your stories.
+        </p>
+        
     </Authorized>
     <NotAuthorized>
         <h1>MASS — the Multi-Author Story System!</h1>
@@ -61,27 +38,8 @@
 </AuthorizeView>
 
 @code {
-    private List<Story>? UserStories;
-    private bool Loading = true;
 
     protected override async Task OnInitializedAsync()
     {
-        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
-        var user = await UserManager.GetUserAsync(authState.User);
-
-        if (user is null)
-        {
-            Loading = false;
-            return;
-        }
-
-        var userId = user.Id;
-        UserStories = await DbContext.Stories
-            .Include(s => s.CreatedBy)
-            .Where(s => (s.CreatedBy.Id == userId || s.Contributors.Any(c => c.Id == userId)) && !s.IsArchived)
-            .OrderByDescending(s => s.LastModifiedAt)
-            .ToListAsync();
-
-        Loading = false;
     }
 }
