@@ -1,8 +1,11 @@
 @page "/authors"
 @rendermode InteractiveServer
+@attribute [Authorize]
 
+@using Microsoft.AspNetCore.Authorization
 @using Microsoft.EntityFrameworkCore
 @using mass.Data
+
 @inject MassDbContext DbContext
 @inject ILogger<Authors> Logger
 
