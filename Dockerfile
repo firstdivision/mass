@@ -5,11 +5,11 @@ WORKDIR /src
 # Copy solution and project files first for caching
 COPY *.sln ./
 COPY UI/mass.csproj UI/
-RUN dotnet restore "mass.sln"
+RUN dotnet restore "UI/mass.csproj"
 
 # Copy the rest and publish a framework-dependent app
 COPY . ./
-RUN dotnet publish "mass.sln" -c Release -o /app/publish
+RUN dotnet publish "UI/mass.csproj" -c Release -o /app/publish
 
 # Final image: use official ASP.NET runtime (includes libicu)
 FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS runtime
