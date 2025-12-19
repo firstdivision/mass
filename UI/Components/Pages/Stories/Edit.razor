@@ -277,7 +277,7 @@ else
 
         if (user is null)
         {
-            ShowToast("Error: unable to load current user.");
+            await ShowToast("Error: unable to load current user.");
             Loading = false;
             return;
         }
@@ -326,7 +326,7 @@ else
         catch (Exception ex)
         {
             Logger.LogError(ex, "Error loading story {StoryId}", Id);
-            ShowToast("Error loading story.");
+            await ShowToast("Error loading story.");
         }
         finally
         {
@@ -357,13 +357,13 @@ else
         try {
             if (StoryEntity is null)
             {
-                ShowToast("Error: story not loaded.");
+                await ShowToast("Error: story not loaded.");
                 return;
             }
 
             if (Input is null || string.IsNullOrEmpty(Input.Title) || string.IsNullOrEmpty(Input.Description))
             {
-                ShowToast("Error: invalid input.");
+                await ShowToast("Error: invalid input.");
                 return;
             }
 
@@ -372,7 +372,7 @@ else
 
             if (user is null)
             {
-                ShowToast("Error: unable to load current user.");
+                await ShowToast("Error: unable to load current user.");
                 return;
             }
 
@@ -381,7 +381,7 @@ else
 
             if (!isAuthorized)
             {
-                ShowToast("Error: you are not authorized to edit this story.");
+                await ShowToast("Error: you are not authorized to edit this story.");
                 return;
             }
 
@@ -395,12 +395,12 @@ else
 
                 await DbContext.SaveChangesAsync();
 
-                ShowToast("Story saved successfully.");
+                await ShowToast("Story saved successfully.");
             }
             catch (Exception ex)
             {
                 Logger.LogError(ex, "Error saving story {StoryId}", Id);
-                ShowToast("Error saving story.");
+                await ShowToast("Error saving story.");
             }
         } finally {
             Saving = false;
@@ -435,7 +435,7 @@ else
     {
         if (StoryEntity is null)
         {
-            ShowToast("Error: story not loaded.");
+            await ShowToast("Error: story not loaded.");
             return;
         }
 
@@ -447,7 +447,7 @@ else
 
             if (user is null)
             {
-                ShowToast("Error: unable to load current user.");
+                await ShowToast("Error: unable to load current user.");
                 return;
             }
 
@@ -496,12 +496,12 @@ else
 
             // clear input and show updated UI
             AddEntryInput = new AddEntryModel();
-            ShowToast("Entry added.");
+            await ShowToast("Entry added.");
         }
         catch (Exception ex)
         {
             Logger.LogError(ex, "Error adding entry to story {StoryId}", Id);
-            ShowToast("Error adding entry.");
+            await ShowToast("Error adding entry.");
         }
         finally
         {
@@ -513,7 +513,7 @@ else
     {
         if (StoryEntity is null)
         {
-            ShowToast("Error: story not loaded.");
+            await ShowToast("Error: story not loaded.");
             return;
         }
 
@@ -525,7 +525,7 @@ else
 
             if (user is null)
             {
-                ShowToast("Error: unable to load current user.");
+                await ShowToast("Error: unable to load current user.");
                 return;
             }
 
@@ -555,12 +555,12 @@ else
             await DbContext.SaveChangesAsync();
 
             NewChapterInput = new NewChapterModel();
-            ShowToast("Chapter created and entry added.");
+            await ShowToast("Chapter created and entry added.");
         }
         catch (Exception ex)
         {
             Logger.LogError(ex, "Error creating chapter for story {StoryId}", Id);
-            ShowToast("Error creating chapter.");
+            await ShowToast("Error creating chapter.");
         }
         finally
         {
@@ -596,7 +596,7 @@ else
     {
         if (string.IsNullOrWhiteSpace(EditingEntryContent))
         {
-            ShowToast("Error: entry content cannot be empty.");
+            await ShowToast("Error: entry content cannot be empty.");
             return;
         }
 
@@ -608,12 +608,12 @@ else
 
             EditingEntryId = null;
             EditingEntryContent = null;
-            ShowToast("Entry updated successfully.");
+            await ShowToast("Entry updated successfully.");
         }
         catch (Exception ex)
         {
             Logger.LogError(ex, "Error updating entry {EntryId}", entry.Id);
-            ShowToast("Error updating entry.");
+            await ShowToast("Error updating entry.");
         }
     }
 }
