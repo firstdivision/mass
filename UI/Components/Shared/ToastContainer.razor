@@ -1,0 +1,26 @@
+@implements IAsyncDisposable
+@inject IJSRuntime JSRuntime
+
+<div id="toastContainer" class="toast-container position-fixed top-0 end-0 p-3 custom-toast-container">
+    <div id="toast" class="toast custom-toast" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="toast-header custom-toast-header">
+            <strong class="me-auto">Notification</strong>
+            <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+        <div id="toastBody" class="toast-body custom-toast-body">
+        </div>
+    </div>
+</div>
+
+@code {
+    public async Task ShowToast(string message)
+    {
+        await JSRuntime.InvokeVoidAsync("showToast", message);
+    }
+
+    async ValueTask IAsyncDisposable.DisposeAsync()
+    {
+        // Cleanup if needed
+        await ValueTask.CompletedTask;
+    }
+}

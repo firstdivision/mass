@@ -28,16 +28,7 @@
     }
 </div>
 
-<div id="toastContainer" class="toast-container position-fixed top-0 end-0 p-3 custom-toast-container">
-    <div id="toast" class="toast custom-toast" role="alert" aria-live="assertive" aria-atomic="true">
-        <div class="toast-header custom-toast-header">
-            <strong class="me-auto">Notification</strong>
-            <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
-        </div>
-        <div id="toastBody" class="toast-body custom-toast-body">
-        </div>
-    </div>
-</div>
+<ToastContainer @ref="toastContainer" />
 
 @if (Loading)
 {
@@ -266,18 +257,18 @@ else
     private bool CurrentUserShouldBeAbleToEdit => Authorized && (!IsLocked || IsLockedByCurrentUser || IsCreator);
     private int? EditingEntryId;
     private string? EditingEntryContent;
+    private ToastContainer? toastContainer;
 
     [SupplyParameterFromForm(FormName = "edit-story")]
     private InputModel? Input { get; set; }
 
-    private void ShowToast(string message)
+    private async Task ShowToast(string message)
     {
-        var toastBody = (IJSObjectReference?)null;
-        _ = JSRuntime.InvokeVoidAsync("showToast", message);
+        if (toastContainer != null)
+        {
+            await toastContainer.ShowToast(message);
+        }
     }
-
-    [Inject]
-    private IJSRuntime JSRuntime { get; set; } = null!;
 
     protected override async Task OnInitializedAsync()
     {
