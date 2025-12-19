@@ -47,6 +47,13 @@ builder.Services.AddAuthentication(options =>
         googleOptions.ClientSecret = GCP_CLIENT_SECRET;
     }).AddIdentityCookies();
 
+    // Configure the application cookie for 24-hour expiration
+    builder.Services.ConfigureApplicationCookie(options =>
+    {
+        options.ExpireTimeSpan = TimeSpan.FromHours(24);
+        options.SlidingExpiration = true;
+    });
+
 var connectionString = Environment.GetEnvironmentVariable("DB_CONNECTION");
 
 // Make sure connection string is not null
