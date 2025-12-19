@@ -9,6 +9,11 @@ RUN dotnet restore "UI/mass.csproj"
 
 # Copy the rest and publish a framework-dependent app
 COPY . ./
+
+# Insert build date into MainLayout.razor
+RUN BUILD_DATE=$(date -u '+%Y-%m-%d-%H-%M') && \
+    sed -i "s|BUILD_DATE_PLACEHOLDER|${BUILD_DATE}|g" UI/Components/Layout/MainLayout.razor
+
 RUN dotnet publish "UI/mass.csproj" -c Release -o /app/publish
 
 # Final image: use official ASP.NET runtime (includes libicu)

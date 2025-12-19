@@ -151,3 +151,25 @@
         overflow-y: auto;
     }
 }
+.nav-footer {
+    background-color: rgba(0, 0, 0, 0.3);
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 0.75rem 1rem;
+    text-align: center;
+    font-size: 0.75rem;
+    color: #d7d7d7;
+    margin-top: auto;
+}
+
+.nav-footer p {
+    margin: 0;
+}
+
+@media (min-width: 641px) {
+    .nav-footer {
+        position: absolute;
+        bottom: 0;
+        width: 250px;
+        left: 0;
+    }
+}
