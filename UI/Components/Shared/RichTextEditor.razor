@@ -1,0 +1,70 @@
+@using Blazored.TextEditor
+
+<BlazoredTextEditor @ref="_editor" Placeholder="@Placeholder">
+
+    <ToolbarContent>
+        @if (Toolbar != null)
+        {
+            @Toolbar
+        }
+        else
+        {
+            <!-- Default toolbar -->
+            <span class="ql-formats">
+                <button class="ql-bold"></button>
+                <button class="ql-italic"></button>
+                <button class="ql-underline"></button>
+            </span>
+            <span class="ql-formats">
+                <button class="ql-list" value="ordered"></button>
+                <button class="ql-list" value="bullet"></button>
+            </span>
+            <span class="ql-formats">
+                <button class="ql-blockquote"></button>
+            </span>
+        }
+    </ToolbarContent>
+
+    <EditorContent>
+        @ChildContent
+    </EditorContent>
+
+</BlazoredTextEditor>
+
+@code {
+    private BlazoredTextEditor? _editor;
+
+    [Parameter] public string? InitialHtml { get; set; }
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+    [Parameter] public RenderFragment? Toolbar { get; set; }
+
+    [Parameter] public string? Placeholder { get; set; } = "Start writing...";
+    [Parameter] public string? CssClass { get; set; }
+
+    // You can still use this if you want to raise changes from elsewhere later,
+    // but we won't call it inside GetHtmlAsync anymore.
+    [Parameter] public EventCallback<string> HtmlChanged { get; set; }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender && _editor is not null && !string.IsNullOrWhiteSpace(InitialHtml))
+        {
+            await _editor.LoadHTMLContent(InitialHtml);
+        }
+    }
+
+    public async Task<string> GetHtmlAsync()
+    {
+        if (_editor is null)
+            return string.Empty;
+
+        return await _editor.GetHTML();
+    }
+
+    public async Task SetHtmlAsync(string html)
+    {
+        if (_editor is null) return;
+
+        await _editor.LoadHTMLContent(html);
+    }
+}

@@ -8,6 +8,7 @@
 @using System.Net
 @using Microsoft.AspNetCore.Components.Authorization
 @using Microsoft.EntityFrameworkCore
+@using mass.Components.Shared
 @using mass.Data
 
 @attribute [Authorize]
@@ -207,13 +208,16 @@ else
     <div class="row">
         <div class="col-md-6">
             <h3>Add to last chapter</h3>
-            <EditForm Model="AddEntryInput" OnValidSubmit="AddToLastChapter" FormName="add-entry" class="mb-3">
+                
+            <EditForm Model="AddEntryInput" OnSubmit="AddToLastChapterWithEditorContent" FormName="add-entry" class="mb-3">
                 <DataAnnotationsValidator />
                 <ValidationSummary class="text-danger" />
 
                 <div class="mb-3">
                     <label for="addEntryContent" class="form-label">Entry</label>
-                    <InputTextArea @bind-Value="AddEntryInput.Content" id="addEntryContent" class="form-control" rows="6" />
+                    <RichTextEditor @ref="_editor"
+                        InitialHtml="@AddEntryInput.Content"
+                        Placeholder="Write your new entry here..." />
                 </div>
 
                 <button type="submit" class="btn btn-primary" disabled="@(Adding)">Add to last chapter</button>
@@ -247,6 +251,11 @@ else
 @code {
     [Parameter]
     public int Id { get; set; }
+
+    private RichTextEditor? _editor;
+    private string StoryHtml = string.Empty;
+
+
 
     private Story? StoryEntity;
     private MassIdentityUser? CurrentUser;
@@ -426,6 +435,25 @@ else
         public string? Content { get; set; }
     }
 
+    private async Task AddToLastChapterWithEditorContent(EditContext editContext)
+    {
+        // Get the HTML content from the editor
+        if (_editor is not null)
+        {
+            AddEntryInput.Content = await _editor.GetHtmlAsync();
+        }
+
+        // Validate the model manually
+        if (string.IsNullOrWhiteSpace(AddEntryInput.Content))
+        {
+            message = "Error: entry content cannot be empty.";
+            return;
+        }
+
+        // Now proceed with the save
+        await AddToLastChapter(editContext);
+    }
+
     private async Task AddToLastChapter(EditContext _)
     {
         if (StoryEntity is null)
@@ -565,9 +593,8 @@ else
 
     private static MarkupString FormatContent(string? content)
     {
-        var encoded = WebUtility.HtmlEncode(content ?? "");
-        var withBreaks = encoded.Replace("\r\n", "<br/>").Replace("\n", "<br/>");
-        return (MarkupString)withBreaks;
+        // Content from the rich text editor is already HTML, so render it directly
+        return (MarkupString)(content ?? "");
     }
 
     private void Cancel()
