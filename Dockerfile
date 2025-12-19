@@ -4,7 +4,7 @@ WORKDIR /src
 
 # Copy solution and project files first for caching
 COPY *.sln ./
-COPY *.csproj ./
+COPY UI/mass.csproj UI/
 RUN dotnet restore "mass.sln"
 
 # Copy the rest and publish a framework-dependent app
