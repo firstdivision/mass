@@ -14,17 +14,16 @@ public class MassDbContext : IdentityDbContext<MassIdentityUser, MassApplication
     {
     }
 
-    public DbSet<Story> Stories { get; set; } = null!;
-    public DbSet<StoryInvite> StoryInvites { get; set; } = null!;
-    public DbSet<Chapter> Chapters { get; set; } = null!;
-    public DbSet<Entry> Entries { get; set; } = null!;
-    public DbSet<WritingPrompt> WritingPrompts { get; set; } = null!;
+    public DbSet<Story> Stories => Set<Story>();
+    public DbSet<StoryInvite> StoryInvites => Set<StoryInvite>();
+    public DbSet<Chapter> Chapters => Set<Chapter>();
+    public DbSet<Entry> Entries => Set<Entry>();
+    public DbSet<WritingPrompt> WritingPrompts => Set<WritingPrompt>();
 
-
-    public DbSet<DataProtectionKey> DataProtectionKeys { get; set; } = null!;
-    public DbSet<MassMassIdentityUserRole> MassMassIdentityUserRoles { get; set; } = null!;
-    public DbSet<MassIdentityUser> MassIdentityUsers { get; set; } = null!;
-    public DbSet<MassApplicationRole> MassApplicationRoles { get; set; } = null!;
+    public DbSet<DataProtectionKey> DataProtectionKeys => Set<DataProtectionKey>();
+    public DbSet<MassMassIdentityUserRole> MassMassIdentityUserRoles => Set<MassMassIdentityUserRole>();
+    public DbSet<MassIdentityUser> MassIdentityUsers => Set<MassIdentityUser>();
+    public DbSet<MassApplicationRole> MassApplicationRoles => Set<MassApplicationRole>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
