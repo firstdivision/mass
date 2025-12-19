@@ -12,7 +12,7 @@ using WritingPromptComponent = mass.Components.Pages.WritingPrompt;
 
 namespace mass.Tests.Components
 {
-    public class WritingPromptTests : TestContext
+    public class WritingPromptTests : BunitContext
     {
         private MassDbContext GetInMemoryDbContext()
         {
@@ -41,7 +41,7 @@ namespace mass.Tests.Components
             Services.Add(new ServiceDescriptor(typeof(AuthenticationStateProvider), _ => authenticationStateMock.Object, ServiceLifetime.Scoped));
 
             // Act - attempt to render the component
-            var cut = RenderComponent<WritingPromptComponent>();
+            var cut = Render<WritingPromptComponent>();
 
             // Assert - component should require authorization (route should redirect)
             // The [Authorize] attribute will prevent unauthorized access
@@ -79,7 +79,7 @@ namespace mass.Tests.Components
             Services.AddAuthorizationCore();
 
             // Act - render the component as authenticated user
-            var cut = RenderComponent<WritingPromptComponent>();
+            var cut = Render<WritingPromptComponent>();
 
             // Assert - component should render successfully for authenticated users
             var component = typeof(WritingPromptComponent);
