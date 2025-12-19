@@ -45,9 +45,13 @@ else
 @code {
     private mass.Data.WritingPrompt? prompt;
 
-    protected override async Task OnInitializedAsync()
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        await LoadNewPrompt();
+        if (firstRender)
+        {
+            await LoadNewPrompt();
+            StateHasChanged();
+        }
     }
 
     private async Task LoadNewPrompt()
