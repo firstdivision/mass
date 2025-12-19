@@ -1,4 +1,5 @@
 @page "/writing-prompt"
+@rendermode InteractiveServer
 
 @using Microsoft.AspNetCore.Components.Authorization
 @using Microsoft.EntityFrameworkCore
@@ -7,55 +8,39 @@
 @inject MassDbContext DbContext
 @inject AuthenticationStateProvider AuthenticationStateProvider
 
-<PageTitle>Daily Writing Prompt</PageTitle>
+<PageTitle>Writing Prompt</PageTitle>
 
-<div class="container mt-5">
-    <div class="row justify-content-center">
-        <div class="col-lg-8">
-            <div class="card shadow-lg">
-                <div class="card-header bg-primary text-white">
-                    <h2 class="mb-0">✨ Your Curated Writing Prompt</h2>
-                </div>
-                <div class="card-body">
-                    @if (prompt == null)
-                    {
-                        <div class="text-center">
-                            <div class="spinner-border text-primary" role="status">
-                                <span class="visually-hidden">Loading...</span>
-                            </div>
-                        </div>
-                    }
-                    else if (prompt.Id == 0)
-                    {
-                        <div class="alert alert-info" role="alert">
-                            <p>We don't have any writing prompts yet, but check back soon!</p>
-                        </div>
-                    }
-                    else
-                    {
-                        <div class="motivational-section mb-4">
-                            <p class="lead text-muted">We've curated this writing prompt just for you based on our collection of inspiring ideas. Use it to spark your creativity and start writing!</p>
-                        </div>
+<h1>Writing Prompt</h1>
 
-                        <div class="prompt-card bg-light p-4 rounded mb-4 border-start border-primary border-4">
-                            <p class="display-6 text-dark mb-0">@prompt.PromptText</p>
-                        </div>
-
-                        <div class="action-section">
-                            <p class="text-muted mb-3">Ready to write? Head to your stories to start a new chapter with this prompt!</p>
-                            <a href="/stories" class="btn btn-primary btn-lg">
-                                <span class="bi bi-book-fill" aria-hidden="true"></span> Start Writing
-                            </a>
-                            <button class="btn btn-outline-secondary btn-lg ms-2" @onclick="LoadNewPrompt">
-                                <span class="bi bi-arrow-repeat" aria-hidden="true"></span> Get Another Prompt
-                            </button>
-                        </div>
-                    }
-                </div>
-            </div>
+@if (prompt == null)
+{
+    <div class="text-center my-5">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
         </div>
     </div>
-</div>
+}
+else if (prompt.Id == 0)
+{
+    <div class="alert alert-info" role="alert">
+        <p>We don't have any writing prompts yet, but check back soon!</p>
+    </div>
+}
+else
+{
+    <p>Here's a writing prompt we've curated just for you. Use it to spark your creativity!</p>
+
+    <div class="bg-light p-4 rounded mb-4 border-start border-primary border-4">
+        <p class="mb-0">@prompt.PromptText</p>
+    </div>
+
+    <p>Ready to write? Head to your stories to start a new chapter with this prompt.</p>
+
+    <div>
+        <a href="/stories" class="btn btn-primary">Start Writing</a>
+        <button class="btn btn-outline-secondary ms-2" @onclick="LoadNewPrompt">Get Another Prompt</button>
+    </div>
+}
 
 @code {
     private mass.Data.WritingPrompt? prompt;
