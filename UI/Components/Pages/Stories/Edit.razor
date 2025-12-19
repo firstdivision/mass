@@ -28,10 +28,16 @@
     }
 </div>
 
-@if (!string.IsNullOrEmpty(message))
-{
-    <div class="alert alert-info mt-3">@message</div>
-}
+<div id="toastContainer" class="toast-container position-fixed top-0 end-0 p-3 custom-toast-container">
+    <div id="toast" class="toast custom-toast" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="toast-header custom-toast-header">
+            <strong class="me-auto">Notification</strong>
+            <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+        <div id="toastBody" class="toast-body custom-toast-body">
+        </div>
+    </div>
+</div>
 
 @if (Loading)
 {
@@ -258,12 +264,20 @@ else
     private bool IsLockedByCurrentUser => CurrentUser != null && StoryEntity?.LockedBy != null && CurrentUser.Id == StoryEntity.LockedBy.Id;
     private string IsLockedByUserName = "";
     private bool CurrentUserShouldBeAbleToEdit => Authorized && (!IsLocked || IsLockedByCurrentUser || IsCreator);
-    private string? message;
     private int? EditingEntryId;
     private string? EditingEntryContent;
 
     [SupplyParameterFromForm(FormName = "edit-story")]
     private InputModel? Input { get; set; }
+
+    private void ShowToast(string message)
+    {
+        var toastBody = (IJSObjectReference?)null;
+        _ = JSRuntime.InvokeVoidAsync("showToast", message);
+    }
+
+    [Inject]
+    private IJSRuntime JSRuntime { get; set; } = null!;
 
     protected override async Task OnInitializedAsync()
     {
@@ -272,7 +286,7 @@ else
 
         if (user is null)
         {
-            message = "Error: unable to load current user.";
+            ShowToast("Error: unable to load current user.");
             Loading = false;
             return;
         }
@@ -321,7 +335,7 @@ else
         catch (Exception ex)
         {
             Logger.LogError(ex, "Error loading story {StoryId}", Id);
-            message = "Error loading story.";
+            ShowToast("Error loading story.");
         }
         finally
         {
@@ -352,13 +366,13 @@ else
         try {
             if (StoryEntity is null)
             {
-                message = "Error: story not loaded.";
+                ShowToast("Error: story not loaded.");
                 return;
             }
 
             if (Input is null || string.IsNullOrEmpty(Input.Title) || string.IsNullOrEmpty(Input.Description))
             {
-                message = "Error: invalid input.";
+                ShowToast("Error: invalid input.");
                 return;
             }
 
@@ -367,7 +381,7 @@ else
 
             if (user is null)
             {
-                message = "Error: unable to load current user.";
+                ShowToast("Error: unable to load current user.");
                 return;
             }
 
@@ -376,7 +390,7 @@ else
 
             if (!isAuthorized)
             {
-                message = "Error: you are not authorized to edit this story.";
+                ShowToast("Error: you are not authorized to edit this story.");
                 return;
             }
 
@@ -390,12 +404,12 @@ else
 
                 await DbContext.SaveChangesAsync();
 
-                message = "Story saved successfully.";
+                ShowToast("Story saved successfully.");
             }
             catch (Exception ex)
             {
                 Logger.LogError(ex, "Error saving story {StoryId}", Id);
-                message = "Error saving story.";
+                ShowToast("Error saving story.");
             }
         } finally {
             Saving = false;
@@ -430,7 +444,7 @@ else
     {
         if (StoryEntity is null)
         {
-            message = "Error: story not loaded.";
+            ShowToast("Error: story not loaded.");
             return;
         }
 
@@ -442,7 +456,7 @@ else
 
             if (user is null)
             {
-                message = "Error: unable to load current user.";
+                ShowToast("Error: unable to load current user.");
                 return;
             }
 
@@ -491,12 +505,12 @@ else
 
             // clear input and show updated UI
             AddEntryInput = new AddEntryModel();
-            message = "Entry added.";
+            ShowToast("Entry added.");
         }
         catch (Exception ex)
         {
             Logger.LogError(ex, "Error adding entry to story {StoryId}", Id);
-            message = "Error adding entry.";
+            ShowToast("Error adding entry.");
         }
         finally
         {
@@ -508,7 +522,7 @@ else
     {
         if (StoryEntity is null)
         {
-            message = "Error: story not loaded.";
+            ShowToast("Error: story not loaded.");
             return;
         }
 
@@ -520,7 +534,7 @@ else
 
             if (user is null)
             {
-                message = "Error: unable to load current user.";
+                ShowToast("Error: unable to load current user.");
                 return;
             }
 
@@ -550,12 +564,12 @@ else
             await DbContext.SaveChangesAsync();
 
             NewChapterInput = new NewChapterModel();
-            message = "Chapter created and entry added.";
+            ShowToast("Chapter created and entry added.");
         }
         catch (Exception ex)
         {
             Logger.LogError(ex, "Error creating chapter for story {StoryId}", Id);
-            message = "Error creating chapter.";
+            ShowToast("Error creating chapter.");
         }
         finally
         {
@@ -591,7 +605,7 @@ else
     {
         if (string.IsNullOrWhiteSpace(EditingEntryContent))
         {
-            message = "Error: entry content cannot be empty.";
+            ShowToast("Error: entry content cannot be empty.");
             return;
         }
 
@@ -603,12 +617,12 @@ else
 
             EditingEntryId = null;
             EditingEntryContent = null;
-            message = "Entry updated successfully.";
+            ShowToast("Entry updated successfully.");
         }
         catch (Exception ex)
         {
             Logger.LogError(ex, "Error updating entry {EntryId}", entry.Id);
-            message = "Error updating entry.";
+            ShowToast("Error updating entry.");
         }
     }
 }

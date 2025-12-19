@@ -89,3 +89,28 @@ h1:focus {
     height: 70vh;
     resize: vertical;
 }
+
+.custom-toast-container {
+    position: fixed !important;
+    top: 0 !important;
+    right: 0 !important;
+    z-index: 9999 !important;
+    max-width: 100%;
+}
+
+.custom-toast {
+    background-color: #fef8ed;
+    border: 1.5px solid #d9a574;
+    box-shadow: 0 4px 12px rgba(217, 165, 116, 0.15);
+}
+
+.custom-toast-header {
+    background-color: #e6b896;
+    border-bottom: 1.5px solid #d9a574;
+    color: #ffffff;
+}
+
+.custom-toast-body {
+    color: #6b4423;
+    font-weight: 600;
+}
