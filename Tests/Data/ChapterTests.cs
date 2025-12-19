@@ -21,6 +21,7 @@ namespace mass.Tests.Data
             // Assert
             Assert.True(chapter.CreatedAt != default);
             Assert.True(chapter.LastModifiedAt != default);
+            Assert.Equal(chapter.CreatedAt, chapter.LastModifiedAt);
         }
 
         [Fact]

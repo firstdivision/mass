@@ -23,6 +23,7 @@ namespace mass.Tests.Data
             Assert.False(story.IsLocked);
             Assert.True(story.CreatedAt != default);
             Assert.True(story.LastModifiedAt != default);
+            Assert.Equal(story.CreatedAt, story.LastModifiedAt);
         }
 
         [Fact]
