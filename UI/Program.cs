@@ -50,7 +50,7 @@ builder.Services.AddAuthentication(options =>
     // Configure the application cookie for 24-hour expiration
     builder.Services.ConfigureApplicationCookie(options =>
     {
-        options.ExpireTimeSpan = TimeSpan.FromHours(24);
+        options.ExpireTimeSpan = TimeSpan.FromDays(90);
         options.SlidingExpiration = true;
     });
 
