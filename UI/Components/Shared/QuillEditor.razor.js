@@ -13,11 +13,7 @@ export function initializeQuill(editorId, initialContent, placeholder) {
         placeholder: placeholder,
         modules: {
             toolbar: [
-                ['bold', 'italic', 'underline', 'strike'],
-                ['blockquote', 'code-block'],
-                [{ 'list': 'ordered'}, { 'list': 'bullet' }],
-                [{ 'header': 1 }, { 'header': 2 }],
-                ['clean']
+                ['bold', 'italic', 'underline', 'clean']
             ]
         }
     });
