@@ -146,6 +146,10 @@ h1:focus {
     padding: 12px;
 }
 
+.quill-editor-container .ql-editor p {
+    margin-bottom: 1rem;
+}
+
 .quill-editor-container .ql-editor.ql-blank::before {
     color: #6c757d;
     font-style: italic;
