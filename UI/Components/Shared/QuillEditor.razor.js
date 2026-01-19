@@ -44,14 +44,14 @@ export function initializeQuill(editorId, initialContent, placeholder, showButto
             buttonContainer.style.gap = '8px';
             buttonContainer.style.alignItems = 'center';
 
-            // Create Save button with floppy disk icon
+            // Create Save button with Bootstrap icon
             const saveBtn = document.createElement('button');
             saveBtn.type = 'button';
             saveBtn.className = 'quill-toolbar-btn';
             saveBtn.title = 'Save';
             
             const saveIcon = document.createElement('i');
-            saveIcon.className = 'bi bi-floppy-disk';
+            saveIcon.className = 'bi bi-floppy';
             saveBtn.appendChild(saveIcon);
             
             saveBtn.onclick = async () => {
@@ -68,7 +68,7 @@ export function initializeQuill(editorId, initialContent, placeholder, showButto
                 cancelBtn.title = 'Cancel';
                 
                 const cancelIcon = document.createElement('i');
-                cancelIcon.className = 'bi bi-x-lg';
+                cancelIcon.className = 'bi bi-x-circle';
                 cancelBtn.appendChild(cancelIcon);
                 
                 cancelBtn.onclick = async () => {
