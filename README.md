@@ -59,6 +59,16 @@ dotnet build
 dotnet run
 ```
 
+## Expose WSL Port to Local Network
+
+From an elevated Powershell prompt, run:
+
+`powershell.exe -ExecutionPolicy Bypass -File "\\wsl$\Debian\home\<your user>\projects\github\mass\wsl-portproxy.ps1"`
+
+You may also have to add a Windows Defender Firewall exception for the TCP port 7213
+
+Now you can access the app from devices on your local network by going to `https://<windows ip>:7213`
+
 ## Database Migrations
 
 Create a new migration:
