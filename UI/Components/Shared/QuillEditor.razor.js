@@ -1,4 +1,5 @@
 let quillInstances = {};
+let initialContents = {};
 
 export function initializeQuill(editorId, initialContent, placeholder, showButtons, showCancelButton, dotnetRef) {
     const container = document.getElementById(editorId);
@@ -21,6 +22,9 @@ export function initializeQuill(editorId, initialContent, placeholder, showButto
     if (initialContent) {
         quill.root.innerHTML = initialContent;
     }
+
+    // Store the initial content for change detection
+    initialContents[editorId] = initialContent || '';
 
     // Add custom buttons to toolbar if needed
     if (showButtons) {
@@ -72,9 +76,16 @@ export function initializeQuill(editorId, initialContent, placeholder, showButto
                 cancelBtn.appendChild(cancelIcon);
                 
                 cancelBtn.onclick = async () => {
-                    showConfirmDialog('Cancel without saving changes?', async () => {
+                    const currentContent = quill.root.innerHTML;
+                    const hasChanges = currentContent !== initialContents[editorId];
+                    
+                    if (hasChanges) {
+                        showConfirmDialog('Cancel without saving changes?', async () => {
+                            await dotnetRef.invokeMethodAsync('HandleCancel');
+                        });
+                    } else {
                         await dotnetRef.invokeMethodAsync('HandleCancel');
-                    });
+                    }
                 };
                 buttonContainer.appendChild(cancelBtn);
             }
