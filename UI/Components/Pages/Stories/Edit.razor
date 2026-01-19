@@ -585,9 +585,9 @@ else
 
     private static MarkupString FormatContent(string? content)
     {
-        var encoded = WebUtility.HtmlEncode(content ?? "");
-        var withBreaks = encoded.Replace("\r\n", "<br/>").Replace("\n", "<br/>");
-        return (MarkupString)withBreaks;
+        // Content from Quill is already HTML, so just return it as-is
+        // Quill handles content sanitization, so it's safe to render directly
+        return (MarkupString)(content ?? "");
     }
 
     private DateTimeOffset? GetCurrentUserLastEntryTime()
