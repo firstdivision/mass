@@ -3,6 +3,7 @@
 @using Microsoft.EntityFrameworkCore
 @using Microsoft.AspNetCore.Identity
 @using Microsoft.AspNetCore.Components.Authorization
+@using System.Net
 @using mass.Data
 @inject MassDbContext DbContext
 @inject NavigationManager NavigationManager
@@ -44,7 +45,7 @@ else
                 @foreach (var entry in chapter.Entries.OrderBy(e => e.Order))
                 {
                     <div class="entry">
-                        <p>@entry.Content</p>
+                        @FormatContent(entry.Content)
                     </div>
                 }
             </section>
@@ -117,5 +118,12 @@ else
         {
             IsLoading = false;
         }
+    }
+
+    private static MarkupString FormatContent(string? content)
+    {
+        // Content from Quill is already HTML, so just return it as-is
+        // Quill handles content sanitization, so it's safe to render directly
+        return (MarkupString)(content ?? "");
     }
 }

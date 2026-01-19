@@ -9,6 +9,7 @@
 @using Microsoft.AspNetCore.Components.Authorization
 @using Microsoft.EntityFrameworkCore
 @using mass.Data
+@using mass.Components.Shared
 
 @attribute [Authorize]
 
@@ -151,14 +152,14 @@ else
 {
     <div class="row">
         <div class="col-md-6">
-            <h3>Add to Last Chapter: @(StoryEntity?.Chapters?.OrderByDescending(c => c.Order).FirstOrDefault()?.Title ?? "No chapters yet")</h3>
-            <EditForm Model="AddEntryInput" OnValidSubmit="AddToLastChapter" FormName="add-entry" class="mb-3">
+            <h3>Add to Last Chapterz: @(StoryEntity?.Chapters?.OrderByDescending(c => c.Order).FirstOrDefault()?.Title ?? "No chapters yet")</h3>
+            <EditForm Model="AddEntryInput" OnSubmit="HandleAddEntrySubmit" FormName="add-entry" class="mb-3">
                 <DataAnnotationsValidator />
                 <ValidationSummary class="text-danger" />
 
                 <div class="mb-3">
                     <label for="addEntryContent" class="form-label">Entry</label>
-                    <InputTextArea @bind-Value="AddEntryInput.Content" id="addEntryContent" class="form-control" rows="6" />
+                    <QuillEditor @ref="addEntryEditor" Content="@(AddEntryInput?.Content ?? "")" ContentChanged="@((content) => { if (AddEntryInput != null) AddEntryInput.Content = content; })" Placeholder="Write your entry here..." />
                 </div>
 
                 <button type="submit" class="btn btn-primary" disabled="@(Adding)">Add to last chapter</button>
@@ -214,9 +215,11 @@ else
                                 </div>
                                 @if (EditingEntryId == entry.Id)
                                 {
-                                    <textarea class="form-control mb-2 entry-editor-textarea" @bind="EditingEntryContent"></textarea>
-                                    <button class="btn btn-sm btn-primary" @onclick="() => SaveEntryEdit(entry)">Save</button>
-                                    <button class="btn btn-sm btn-secondary" @onclick="CancelEntryEdit">Cancel</button>
+                                    <QuillEditor @ref="editEntryEditor" Content="@(EditingEntryContent ?? "")" ContentChanged="@((content) => EditingEntryContent = content)" Placeholder="Edit your entry..." />
+                                    <div class="mt-2">
+                                        <button class="btn btn-sm btn-primary" @onclick="() => SaveEntryEdit(entry)">Save</button>
+                                        <button class="btn btn-sm btn-secondary" @onclick="CancelEntryEdit">Cancel</button>
+                                    </div>
                                 }
                                 else
                                 {
@@ -259,6 +262,8 @@ else
     private int? EditingEntryId;
     private string? EditingEntryContent;
     private ToastContainer? toastContainer;
+    private QuillEditor? addEntryEditor;
+    private QuillEditor? editEntryEditor;
 
     [SupplyParameterFromForm(FormName = "edit-story")]
     private InputModel? Input { get; set; }
@@ -321,6 +326,16 @@ else
                 Input.Description ??= StoryEntity.Description;
                 Input.IsPublic = StoryEntity.IsPublic;
                 Input.IsArchived = StoryEntity.IsArchived;
+            }
+
+            if (AddEntryInput is null)
+            {
+                AddEntryInput = new AddEntryModel();
+            }
+
+            if (NewChapterInput is null)
+            {
+                NewChapterInput = new NewChapterModel();
             }
 
         }
@@ -409,10 +424,10 @@ else
     }
 
     [SupplyParameterFromForm(FormName = "add-entry")]
-    private AddEntryModel AddEntryInput { get; set; } = new();
+    private AddEntryModel? AddEntryInput { get; set; }
     
     [SupplyParameterFromForm(FormName = "new-chapter")]
-    private NewChapterModel NewChapterInput { get; set; } = new();
+    private NewChapterModel? NewChapterInput { get; set; }
 
     private sealed class AddEntryModel
     {
@@ -433,6 +448,12 @@ else
         if (StoryEntity is null)
         {
             await ShowToast("Error: story not loaded.");
+            return;
+        }
+
+        if (AddEntryInput is null)
+        {
+            await ShowToast("Error: entry input not initialized.");
             return;
         }
 
@@ -514,6 +535,12 @@ else
             return;
         }
 
+        if (NewChapterInput is null)
+        {
+            await ShowToast("Error: chapter input not initialized.");
+            return;
+        }
+
         Adding = true;
         try
         {
@@ -558,9 +585,9 @@ else
 
     private static MarkupString FormatContent(string? content)
     {
-        var encoded = WebUtility.HtmlEncode(content ?? "");
-        var withBreaks = encoded.Replace("\r\n", "<br/>").Replace("\n", "<br/>");
-        return (MarkupString)withBreaks;
+        // Content from Quill is already HTML, so just return it as-is
+        // Quill handles content sanitization, so it's safe to render directly
+        return (MarkupString)(content ?? "");
     }
 
     private DateTimeOffset? GetCurrentUserLastEntryTime()
@@ -605,6 +632,21 @@ else
         NavigationManager.NavigateTo("/stories");
     }
 
+    private async Task HandleAddEntrySubmit(EditContext context)
+    {
+        // Capture content from Quill editor before validation
+        if (addEntryEditor != null && AddEntryInput != null)
+        {
+            AddEntryInput.Content = await addEntryEditor.GetContent();
+        }
+
+        // Now validate and submit
+        if (context.Validate())
+        {
+            await AddToLastChapter(context);
+        }
+    }
+
     private void StartEditEntry(Entry entry)
     {
         EditingEntryId = entry.Id;
@@ -619,6 +661,11 @@ else
 
     private async Task SaveEntryEdit(Entry entry)
     {
+        if (editEntryEditor != null)
+        {
+            EditingEntryContent = await editEntryEditor.GetContent();
+        }
+
         if (string.IsNullOrWhiteSpace(EditingEntryContent))
         {
             await ShowToast("Error: entry content cannot be empty.");

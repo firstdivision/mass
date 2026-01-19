@@ -114,3 +114,31 @@ h1:focus {
     color: #6b4423;
     font-weight: 600;
 }
+
+/* Quill Editor Styling */
+.quill-editor-container {
+    background-color: white;
+    border: 1px solid #ced4da;
+    border-radius: 0.25rem;
+    min-height: 200px;
+}
+
+.quill-editor-container .ql-toolbar {
+    border-radius: 0.25rem 0.25rem 0 0;
+    background-color: #f8f9fa;
+}
+
+.quill-editor-container .ql-container {
+    border-radius: 0 0 0.25rem 0.25rem;
+    font-size: 1rem;
+}
+
+.quill-editor-container .ql-editor {
+    min-height: 150px;
+    padding: 12px;
+}
+
+.quill-editor-container .ql-editor.ql-blank::before {
+    color: #6c757d;
+    font-style: italic;
+}
