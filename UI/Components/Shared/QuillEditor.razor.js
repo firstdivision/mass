@@ -41,5 +41,13 @@ export function setQuillContent(editorId, content) {
 }
 
 export function disposeQuill(editorId) {
+    const quill = quillInstances[editorId];
+    if (quill) {
+        // Remove the toolbar that Quill creates
+        const toolbar = document.querySelector(`#${editorId}`)?.previousElementSibling;
+        if (toolbar && toolbar.classList.contains('ql-toolbar')) {
+            toolbar.remove();
+        }
+    }
     delete quillInstances[editorId];
 }
