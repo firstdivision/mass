@@ -145,6 +145,44 @@ else
     </div>
 }
 
+
+@* Add entry / New chapter forms *@
+@if (!Loading && !NotFound && Authorized && CurrentUserShouldBeAbleToEdit)
+{
+    <div class="row">
+        <div class="col-md-6">
+            <h3>Add to Last Chapter</h3>
+            <EditForm Model="AddEntryInput" OnValidSubmit="AddToLastChapter" FormName="add-entry" class="mb-3">
+                <DataAnnotationsValidator />
+                <ValidationSummary class="text-danger" />
+
+                <div class="mb-3">
+                    <label for="addEntryContent" class="form-label">Entry</label>
+                    <InputTextArea @bind-Value="AddEntryInput.Content" id="addEntryContent" class="form-control" rows="6" />
+                </div>
+
+                <button type="submit" class="btn btn-primary" disabled="@(Adding)">Add to last chapter</button>
+            </EditForm>
+        </div>
+
+        <div class="col-md-6">
+            <h3>Start New Chapter</h3>
+            <EditForm Model="NewChapterInput" OnValidSubmit="StartNewChapter" FormName="new-chapter">
+                <DataAnnotationsValidator />
+                <ValidationSummary class="text-danger" />
+
+                <div class="mb-3">
+                    <label for="newChapterTitle" class="form-label">Chapter Title</label>
+                    <InputText @bind-Value="NewChapterInput.Title" id="newChapterTitle" class="form-control" />
+                </div>
+
+                <button type="submit" class="btn btn-secondary" disabled="@(Adding)">Create Chapter</button>
+            </EditForm>
+        </div>
+    </div>
+}
+
+
 @* Chapters & Entries (read-only) *@
 @if (!Loading && !NotFound && Authorized && StoryEntity?.Chapters?.Any() == true)
 {
@@ -200,49 +238,6 @@ else
         </div>        
     }
 </div>
-}
-
-@* Add entry / New chapter forms *@
-@if (!Loading && !NotFound && Authorized && CurrentUserShouldBeAbleToEdit)
-{
-    <hr />
-
-    <div class="row">
-        <div class="col-md-6">
-            <h3>Add to last chapter</h3>
-            <EditForm Model="AddEntryInput" OnValidSubmit="AddToLastChapter" FormName="add-entry" class="mb-3">
-                <DataAnnotationsValidator />
-                <ValidationSummary class="text-danger" />
-
-                <div class="mb-3">
-                    <label for="addEntryContent" class="form-label">Entry</label>
-                    <InputTextArea @bind-Value="AddEntryInput.Content" id="addEntryContent" class="form-control" rows="6" />
-                </div>
-
-                <button type="submit" class="btn btn-primary" disabled="@(Adding)">Add to last chapter</button>
-            </EditForm>
-        </div>
-
-        <div class="col-md-6">
-            <h3>Start new chapter</h3>
-            <EditForm Model="NewChapterInput" OnValidSubmit="StartNewChapter" FormName="new-chapter">
-                <DataAnnotationsValidator />
-                <ValidationSummary class="text-danger" />
-
-                <div class="mb-3">
-                    <label for="newChapterTitle" class="form-label">Chapter Title</label>
-                    <InputText @bind-Value="NewChapterInput.Title" id="newChapterTitle" class="form-control" />
-                </div>
-
-                <div class="mb-3">
-                    <label for="newChapterContent" class="form-label">First entry</label>
-                    <InputTextArea @bind-Value="NewChapterInput.Content" id="newChapterContent" class="form-control" rows="6" />
-                </div>
-
-                <button type="submit" class="btn btn-secondary" disabled="@(Adding)">Create chapter and add entry</button>
-            </EditForm>
-        </div>
-    </div>
 }
 
 
@@ -431,10 +426,6 @@ else
         [Required]
         [StringLength(200, MinimumLength = 1)]
         public string? Title { get; set; }
-
-        [Required]
-        [StringLength(10000, MinimumLength = 1)]
-        public string? Content { get; set; }
     }
 
     private async Task AddToLastChapter(EditContext _)
@@ -545,15 +536,6 @@ else
                 Order = nextChapterOrder
             };
 
-            var entry = new Entry
-            {
-                Chapter = chapter,
-                CreatedBy = user,
-                Content = NewChapterInput.Content ?? string.Empty,
-                Order = 1
-            };
-
-            chapter.Entries.Add(entry);
             StoryEntity.Chapters!.Add(chapter);
             DbContext.Add(chapter);
 
@@ -561,7 +543,7 @@ else
             await DbContext.SaveChangesAsync();
 
             NewChapterInput = new NewChapterModel();
-            await ShowToast("Chapter created and entry added.");
+            await ShowToast("Chapter created successfully.");
         }
         catch (Exception ex)
         {
