@@ -72,7 +72,9 @@ export function initializeQuill(editorId, initialContent, placeholder, showButto
                 cancelBtn.appendChild(cancelIcon);
                 
                 cancelBtn.onclick = async () => {
-                    await dotnetRef.invokeMethodAsync('HandleCancel');
+                    showConfirmDialog('Cancel without saving changes?', async () => {
+                        await dotnetRef.invokeMethodAsync('HandleCancel');
+                    });
                 };
                 buttonContainer.appendChild(cancelBtn);
             }
@@ -111,3 +113,66 @@ export function disposeQuill(editorId) {
     }
     delete quillInstances[editorId];
 }
+
+function showConfirmDialog(message, onConfirm) {
+    // Create modal backdrop
+    const backdrop = document.createElement('div');
+    backdrop.className = 'modal-backdrop fade show';
+    backdrop.style.display = 'block';
+
+    // Create modal dialog
+    const modal = document.createElement('div');
+    modal.className = 'modal fade show';
+    modal.style.display = 'block';
+    modal.setAttribute('role', 'dialog');
+    modal.setAttribute('aria-hidden', 'false');
+
+    modal.innerHTML = `
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Confirm</h5>
+                </div>
+                <div class="modal-body">
+                    ${message}
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" id="cancelConfirmBtn">No, keep editing</button>
+                    <button type="button" class="btn btn-danger" id="confirmBtn">Yes, cancel</button>
+                </div>
+            </div>
+        </div>
+    `;
+
+    // Add to page
+    document.body.appendChild(backdrop);
+    document.body.appendChild(modal);
+
+    // Handle button clicks
+    const confirmBtn = modal.querySelector('#confirmBtn');
+    const cancelConfirmBtn = modal.querySelector('#cancelConfirmBtn');
+
+    function closeModal() {
+        backdrop.remove();
+        modal.remove();
+        document.body.classList.remove('modal-open');
+    }
+
+    confirmBtn.onclick = async () => {
+        closeModal();
+        await onConfirm();
+    };
+
+    cancelConfirmBtn.onclick = () => {
+        closeModal();
+    };
+
+    // Add modal-open class to body
+    document.body.classList.add('modal-open');
+
+    // Close on backdrop click
+    backdrop.onclick = () => {
+        closeModal();
+    };
+}
+
