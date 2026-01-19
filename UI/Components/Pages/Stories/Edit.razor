@@ -152,18 +152,11 @@ else
 {
     <div class="row">
         <div class="col-md-6">
-            <h3>Add to Last Chapterz: @(StoryEntity?.Chapters?.OrderByDescending(c => c.Order).FirstOrDefault()?.Title ?? "No chapters yet")</h3>
-            <EditForm Model="AddEntryInput" OnSubmit="HandleAddEntrySubmit" FormName="add-entry" class="mb-3">
-                <DataAnnotationsValidator />
-                <ValidationSummary class="text-danger" />
-
-                <div class="mb-3">
-                    <label for="addEntryContent" class="form-label">Entry</label>
-                    <QuillEditor @ref="addEntryEditor" Content="@(AddEntryInput?.Content ?? "")" ContentChanged="@((content) => { if (AddEntryInput != null) AddEntryInput.Content = content; })" Placeholder="Write your entry here..." />
-                </div>
-
-                <button type="submit" class="btn btn-primary" disabled="@(Adding)">Add to last chapter</button>
-            </EditForm>
+            <h3>Add to Last Chapter: @(StoryEntity?.Chapters?.OrderByDescending(c => c.Order).FirstOrDefault()?.Title ?? "No chapters yet")</h3>
+            <div class="mb-3">
+                <label for="addEntryContent" class="form-label">Entry</label>
+                <QuillEditor @ref="addEntryEditor" Content="@(AddEntryInput?.Content ?? "")" ContentChanged="@((content) => { if (AddEntryInput != null) AddEntryInput.Content = content; })" Placeholder="Write your entry here..." ShowButtons="true" ShowCancelButton="false" OnSave="HandleAddEntrySubmit" IsSaving="@Adding" />
+            </div>
         </div>
 
         <div class="col-md-6">
@@ -215,11 +208,7 @@ else
                                 </div>
                                 @if (EditingEntryId == entry.Id)
                                 {
-                                    <QuillEditor @ref="editEntryEditor" Content="@(EditingEntryContent ?? "")" ContentChanged="@((content) => EditingEntryContent = content)" Placeholder="Edit your entry..." />
-                                    <div class="mt-2">
-                                        <button class="btn btn-sm btn-primary" @onclick="() => SaveEntryEdit(entry)">Save</button>
-                                        <button class="btn btn-sm btn-secondary" @onclick="CancelEntryEdit">Cancel</button>
-                                    </div>
+                                    <QuillEditor @ref="editEntryEditor" Content="@(EditingEntryContent ?? "")" ContentChanged="@((content) => EditingEntryContent = content)" Placeholder="Edit your entry..." ShowButtons="true" ShowCancelButton="true" OnSave="@(() => SaveEntryEdit(entry))" OnCancel="CancelEntryEdit" />
                                 }
                                 else
                                 {
@@ -632,19 +621,23 @@ else
         NavigationManager.NavigateTo("/stories");
     }
 
-    private async Task HandleAddEntrySubmit(EditContext context)
+    private async Task HandleAddEntrySubmit()
     {
-        // Capture content from Quill editor before validation
+        // Capture content from Quill editor
         if (addEntryEditor != null && AddEntryInput != null)
         {
             AddEntryInput.Content = await addEntryEditor.GetContent();
+            
+            // Validate content
+            if (string.IsNullOrWhiteSpace(AddEntryInput.Content))
+            {
+                await ShowToast("Error: entry content cannot be empty.");
+                return;
+            }
         }
 
-        // Now validate and submit
-        if (context.Validate())
-        {
-            await AddToLastChapter(context);
-        }
+        // Submit the form
+        await AddToLastChapter(null!);
     }
 
     private void StartEditEntry(Entry entry)
