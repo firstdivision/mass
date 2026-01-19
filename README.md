@@ -90,7 +90,7 @@ docker build -t mass:latest .
 Run the container (maps container port 80 to host port 5000). Pass your database connection string as the `DB_CONNECTION` environment variable:
 
 ```bash
-# Inline env var
+# Inline env var 
 docker run --network mass-network --rm -p 5000:80 \
   -e 'DB_CONNECTION=Host=localdb;Database=mass;Username=guest;Password=guest' \
   mass:latest
