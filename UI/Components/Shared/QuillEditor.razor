@@ -2,6 +2,16 @@
 @implements IAsyncDisposable
 
 <div @ref="editorContainer" id="@EditorId" class="quill-editor-container"></div>
+@if (ShowButtons)
+{
+    <div class="quill-editor-buttons mt-2">
+        <button type="button" class="btn btn-sm btn-primary" @onclick="HandleSave" disabled="@IsSaving">Save</button>
+        @if (ShowCancelButton)
+        {
+            <button type="button" class="btn btn-sm btn-secondary" @onclick="HandleCancel">Cancel</button>
+        }
+    </div>
+}
 
 @code {
     [Parameter]
@@ -15,6 +25,21 @@
 
     [Parameter]
     public string Placeholder { get; set; } = "Enter content...";
+
+    [Parameter]
+    public bool ShowButtons { get; set; } = false;
+
+    [Parameter]
+    public bool ShowCancelButton { get; set; } = true;
+
+    [Parameter]
+    public EventCallback OnSave { get; set; }
+
+    [Parameter]
+    public EventCallback OnCancel { get; set; }
+
+    [Parameter]
+    public bool IsSaving { get; set; } = false;
 
     private ElementReference editorContainer;
     private IJSObjectReference? module;
@@ -72,6 +97,18 @@
             Content = newContent;
             await ContentChanged.InvokeAsync(Content);
         }
+    }
+
+    private async Task HandleSave()
+    {
+        // Update content before invoking save callback
+        Content = await GetContent();
+        await OnSave.InvokeAsync();
+    }
+
+    private async Task HandleCancel()
+    {
+        await OnCancel.InvokeAsync();
     }
 
     async ValueTask IAsyncDisposable.DisposeAsync()
