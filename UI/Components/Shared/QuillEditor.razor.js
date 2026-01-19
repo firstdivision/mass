@@ -1,6 +1,6 @@
 let quillInstances = {};
 
-export function initializeQuill(editorId, initialContent, placeholder) {
+export function initializeQuill(editorId, initialContent, placeholder, showButtons, showCancelButton, dotnetRef) {
     const container = document.getElementById(editorId);
     
     if (!container) {
@@ -8,18 +8,72 @@ export function initializeQuill(editorId, initialContent, placeholder) {
         return null;
     }
 
+    const toolbarConfig = ['bold', 'italic', 'underline', 'clean'];
+
     const quill = new Quill(`#${editorId}`, {
         theme: 'snow',
         placeholder: placeholder,
         modules: {
-            toolbar: [
-                ['bold', 'italic', 'underline', 'clean']
-            ]
+            toolbar: toolbarConfig
         }
     });
 
     if (initialContent) {
         quill.root.innerHTML = initialContent;
+    }
+
+    // Add custom buttons to toolbar if needed
+    if (showButtons) {
+        const toolbar = document.querySelector(`#${editorId}`)?.previousElementSibling;
+        if (toolbar && toolbar.classList.contains('ql-toolbar')) {
+            // Ensure toolbar uses flexbox layout
+            toolbar.style.display = 'flex';
+            toolbar.style.alignItems = 'center';
+            toolbar.style.flexWrap = 'wrap';
+            toolbar.style.gap = '8px';
+
+            // Create a spacer to push buttons to the right
+            const spacer = document.createElement('div');
+            spacer.style.marginLeft = 'auto';
+            toolbar.appendChild(spacer);
+
+            // Create a container for our buttons
+            const buttonContainer = document.createElement('div');
+            buttonContainer.className = 'quill-custom-buttons';
+            buttonContainer.style.display = 'flex';
+            buttonContainer.style.gap = '8px';
+            buttonContainer.style.alignItems = 'center';
+
+            // Create Save button
+            const saveBtn = document.createElement('button');
+            saveBtn.type = 'button';
+            saveBtn.className = 'btn btn-sm btn-primary quill-save-btn';
+            saveBtn.textContent = 'Save';
+            saveBtn.style.padding = '0.25rem 0.5rem';
+            saveBtn.style.fontSize = '0.875rem';
+            saveBtn.onclick = async () => {
+                await dotnetRef.invokeMethodAsync('HandleSave');
+            };
+
+            buttonContainer.appendChild(saveBtn);
+
+            // Create Cancel button if needed
+            if (showCancelButton) {
+                const cancelBtn = document.createElement('button');
+                cancelBtn.type = 'button';
+                cancelBtn.className = 'btn btn-sm btn-secondary quill-cancel-btn';
+                cancelBtn.textContent = 'Cancel';
+                cancelBtn.style.padding = '0.25rem 0.5rem';
+                cancelBtn.style.fontSize = '0.875rem';
+                cancelBtn.onclick = async () => {
+                    await dotnetRef.invokeMethodAsync('HandleCancel');
+                };
+                buttonContainer.appendChild(cancelBtn);
+            }
+
+            // Append buttons to the toolbar
+            toolbar.appendChild(buttonContainer);
+        }
     }
 
     quillInstances[editorId] = quill;

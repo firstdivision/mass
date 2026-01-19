@@ -133,6 +133,7 @@ h1:focus {
 .quill-editor-container .ql-toolbar {
     border-radius: 0.25rem 0.25rem 0 0;
     background-color: #f8f9fa;
+    padding: 8px;
 }
 
 .quill-editor-container .ql-container {
@@ -148,4 +149,55 @@ h1:focus {
 .quill-editor-container .ql-editor.ql-blank::before {
     color: #6c757d;
     font-style: italic;
+}
+
+.quill-custom-buttons {
+    display: flex;
+    gap: 4px;
+    align-items: center;
+    margin-left: 8px;
+    padding-left: 8px;
+    border-left: 1px solid #ccc;
+}
+
+.quill-custom-buttons .btn {
+    background: none;
+    border: 1px solid #ccc;
+    padding: 4px 8px !important;
+    margin: 0 !important;
+    cursor: pointer;
+    color: #333 !important;
+    text-decoration: none !important;
+    font-size: 0.875rem;
+    border-radius: 3px;
+    transition: all 0.2s ease;
+}
+
+.quill-custom-buttons .btn:hover {
+    background-color: #f0f0f0 !important;
+    border-color: #999 !important;
+    color: #000 !important;
+}
+
+.quill-custom-buttons .btn-primary {
+    background-color: transparent !important;
+    border-color: #ccc !important;
+    color: #333 !important;
+}
+
+.quill-custom-buttons .btn-primary:hover {
+    background-color: #f0f0f0 !important;
+    border-color: #999 !important;
+}
+
+.quill-custom-buttons .btn-secondary {
+    background-color: transparent !important;
+    border-color: #ccc !important;
+    color: #666 !important;
+}
+
+.quill-custom-buttons .btn-secondary:hover {
+    background-color: #f0f0f0 !important;
+    border-color: #999 !important;
+    color: #333 !important;
 }

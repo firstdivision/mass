@@ -1,17 +1,8 @@
+@using Microsoft.AspNetCore.Components
 @using Microsoft.AspNetCore.Components.Forms
 @implements IAsyncDisposable
 
 <div @ref="editorContainer" id="@EditorId" class="quill-editor-container"></div>
-@if (ShowButtons)
-{
-    <div class="quill-editor-buttons mt-2">
-        <button type="button" class="btn btn-sm btn-primary" @onclick="HandleSave" disabled="@IsSaving">Save</button>
-        @if (ShowCancelButton)
-        {
-            <button type="button" class="btn btn-sm btn-secondary ms-2" @onclick="HandleCancel">Cancel</button>
-        }
-    </div>
-}
 
 @code {
     [Parameter]
@@ -54,7 +45,8 @@
                 module = await JS.InvokeAsync<IJSObjectReference>("import", "./Components/Shared/QuillEditor.razor.js");
                 if (module != null)
                 {
-                    await module.InvokeVoidAsync("initializeQuill", EditorId, Content, Placeholder);
+                    var dotnetRef = DotNetObjectReference.Create(this);
+                    await module.InvokeVoidAsync("initializeQuill", EditorId, Content, Placeholder, ShowButtons, ShowCancelButton, dotnetRef);
                     previousContent = Content;
                 }
             }
@@ -99,14 +91,16 @@
         }
     }
 
-    private async Task HandleSave()
+    [JSInvokable]
+    public async Task HandleSave()
     {
         // Update content before invoking save callback
         Content = await GetContent();
         await OnSave.InvokeAsync();
     }
 
-    private async Task HandleCancel()
+    [JSInvokable]
+    public async Task HandleCancel()
     {
         await OnCancel.InvokeAsync();
     }
