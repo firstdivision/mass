@@ -655,3 +655,25 @@ BEGIN
 END $EF$;
 COMMIT;
 
+START TRANSACTION;
+
+DO $EF$
+BEGIN
+    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "migration_id" = '20260119154852_AddEntryContentType') THEN
+
+                    UPDATE entries
+                    SET content = '<p>' || regexp_replace(content, '\n', '</p><p>', 'g') || '</p>'
+                    WHERE content IS NOT NULL AND content NOT LIKE '%<%';
+                
+    END IF;
+END $EF$;
+
+DO $EF$
+BEGIN
+    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "migration_id" = '20260119154852_AddEntryContentType') THEN
+    INSERT INTO "__EFMigrationsHistory" (migration_id, product_version)
+    VALUES ('20260119154852_AddEntryContentType', '10.0.1');
+    END IF;
+END $EF$;
+COMMIT;
+

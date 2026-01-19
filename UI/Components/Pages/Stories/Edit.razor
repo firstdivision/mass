@@ -152,7 +152,7 @@ else
 {
     <div class="row">
         <div class="col-md-6">
-            <h3>Add to Last Chapter: @(StoryEntity?.Chapters?.OrderByDescending(c => c.Order).FirstOrDefault()?.Title ?? "No chapters yet")</h3>
+            <h3>Add to Last Chapterz: @(StoryEntity?.Chapters?.OrderByDescending(c => c.Order).FirstOrDefault()?.Title ?? "No chapters yet")</h3>
             <EditForm Model="AddEntryInput" OnSubmit="HandleAddEntrySubmit" FormName="add-entry" class="mb-3">
                 <DataAnnotationsValidator />
                 <ValidationSummary class="text-danger" />
@@ -215,7 +215,7 @@ else
                                 </div>
                                 @if (EditingEntryId == entry.Id)
                                 {
-                                    <QuillEditor @ref="editEntryEditor" Content="EditingEntryContent" ContentChanged="@((content) => EditingEntryContent = content)" Placeholder="Edit your entry..." />
+                                    <QuillEditor @ref="editEntryEditor" Content="@(EditingEntryContent ?? "")" ContentChanged="@((content) => EditingEntryContent = content)" Placeholder="Edit your entry..." />
                                     <div class="mt-2">
                                         <button class="btn btn-sm btn-primary" @onclick="() => SaveEntryEdit(entry)">Save</button>
                                         <button class="btn btn-sm btn-secondary" @onclick="CancelEntryEdit">Cancel</button>
