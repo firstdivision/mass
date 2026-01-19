@@ -44,13 +44,16 @@ export function initializeQuill(editorId, initialContent, placeholder, showButto
             buttonContainer.style.gap = '8px';
             buttonContainer.style.alignItems = 'center';
 
-            // Create Save button
+            // Create Save button with floppy disk icon
             const saveBtn = document.createElement('button');
             saveBtn.type = 'button';
-            saveBtn.className = 'btn btn-sm btn-primary quill-save-btn';
-            saveBtn.textContent = 'Save';
-            saveBtn.style.padding = '0.25rem 0.5rem';
-            saveBtn.style.fontSize = '0.875rem';
+            saveBtn.className = 'quill-toolbar-btn';
+            saveBtn.title = 'Save';
+            
+            const saveIcon = document.createElement('i');
+            saveIcon.className = 'bi bi-floppy-disk';
+            saveBtn.appendChild(saveIcon);
+            
             saveBtn.onclick = async () => {
                 await dotnetRef.invokeMethodAsync('HandleSave');
             };
@@ -61,10 +64,13 @@ export function initializeQuill(editorId, initialContent, placeholder, showButto
             if (showCancelButton) {
                 const cancelBtn = document.createElement('button');
                 cancelBtn.type = 'button';
-                cancelBtn.className = 'btn btn-sm btn-secondary quill-cancel-btn';
-                cancelBtn.textContent = 'Cancel';
-                cancelBtn.style.padding = '0.25rem 0.5rem';
-                cancelBtn.style.fontSize = '0.875rem';
+                cancelBtn.className = 'quill-toolbar-btn';
+                cancelBtn.title = 'Cancel';
+                
+                const cancelIcon = document.createElement('i');
+                cancelIcon.className = 'bi bi-x-lg';
+                cancelBtn.appendChild(cancelIcon);
+                
                 cancelBtn.onclick = async () => {
                     await dotnetRef.invokeMethodAsync('HandleCancel');
                 };
