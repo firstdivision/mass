@@ -151,7 +151,7 @@ else
 {
     <div class="row">
         <div class="col-md-6">
-            <h3>Add to Last Chapter</h3>
+            <h3>Add to Last Chapter: @(StoryEntity?.Chapters?.OrderByDescending(c => c.Order).FirstOrDefault()?.Title ?? "No chapters yet")</h3>
             <EditForm Model="AddEntryInput" OnValidSubmit="AddToLastChapter" FormName="add-entry" class="mb-3">
                 <DataAnnotationsValidator />
                 <ValidationSummary class="text-danger" />
