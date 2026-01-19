@@ -139,7 +139,7 @@ function showConfirmDialog(message, onConfirm) {
     modal.setAttribute('aria-hidden', 'false');
 
     modal.innerHTML = `
-        <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-dialog modal-dialog-centered modal-sm" role="document" style="max-width: 90vw; margin: 1rem auto;">
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title">Confirm</h5>
