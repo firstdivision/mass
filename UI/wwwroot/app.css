@@ -174,14 +174,7 @@ h1:focus {
     width: 26px;
     height: 26px;
     border-radius: 3px;
-    transition: all 0.2s ease;
     flex-shrink: 0;
-}
-
-.quill-toolbar-btn:hover {
-    background-color: #f0f0f0 !important;
-    border-color: #999 !important;
-    color: #000 !important;
 }
 
 .quill-toolbar-btn i {
