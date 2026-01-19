@@ -181,3 +181,42 @@ h1:focus {
     font-size: 1rem;
     color: inherit;
 }
+/* Modal responsive styles for mobile */
+@media (max-width: 576px) {
+    .modal.fade.show {
+        padding: 0 !important;
+    }
+
+    .modal-dialog {
+        margin: 0;
+        height: 100%;
+        display: flex;
+        align-items: flex-end;
+    }
+
+    .modal-dialog-centered {
+        align-items: flex-end;
+    }
+
+    .modal-content {
+        border-radius: 1rem 1rem 0 0;
+        width: 100%;
+        margin: 0;
+    }
+
+    .modal-body {
+        padding: 1rem;
+        font-size: 1rem;
+    }
+
+    .modal-footer {
+        padding: 1rem;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+
+    .modal-footer .btn {
+        flex: 1;
+        min-width: 100px;
+    }
+}
