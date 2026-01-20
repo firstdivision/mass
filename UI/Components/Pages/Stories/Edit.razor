@@ -10,6 +10,7 @@
 @using Microsoft.EntityFrameworkCore
 @using mass.Data
 @using mass.Components.Shared
+@using Microsoft.JSInterop
 
 @attribute [Authorize]
 
@@ -18,6 +19,7 @@
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject NavigationManager NavigationManager
 @inject ILogger<Edit> Logger
+@inject IJSRuntime JS
 
 <PageTitle>@(Loading ? "Edit Story" : $"Editing: {StoryEntity?.Title}")</PageTitle>
 
@@ -150,31 +152,57 @@ else
 @* Add entry / New chapter forms *@
 @if (!Loading && !NotFound && Authorized && CurrentUserShouldBeAbleToEdit)
 {
-    <div class="row">
-        <div class="col-md-6">
+    <div class="w-100">
+        <div class="d-flex justify-content-between align-items-center mb-3">
             <h3>Add to Last Chapter: @(StoryEntity?.Chapters?.OrderByDescending(c => c.Order).FirstOrDefault()?.Title ?? "No chapters yet")</h3>
-            <div class="mb-3">
-                <label for="addEntryContent" class="form-label">Entry</label>
-                <QuillEditor @ref="addEntryEditor" Content="@(AddEntryInput?.Content ?? "")" ContentChanged="@((content) => { if (AddEntryInput != null) AddEntryInput.Content = content; })" Placeholder="Write your entry here..." ShowButtons="true" ShowCancelButton="false" OnSave="HandleAddEntrySubmit" IsSaving="@Adding" />
-            </div>
+            <button type="button" class="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#newChapterModal">Add New Chapter</button>
         </div>
-
-        <div class="col-md-6">
-            <h3>Start New Chapter</h3>
-            <EditForm Model="NewChapterInput" OnValidSubmit="StartNewChapter" FormName="new-chapter">
-                <DataAnnotationsValidator />
-                <ValidationSummary class="text-danger" />
-
-                <div class="mb-3">
-                    <label for="newChapterTitle" class="form-label">Chapter Title</label>
-                    <InputText @bind-Value="NewChapterInput.Title" id="newChapterTitle" class="form-control" />
-                </div>
-
-                <button type="submit" class="btn btn-secondary" disabled="@(Adding)">Create Chapter</button>
-            </EditForm>
+        <div class="mb-3">
+            <label for="addEntryContent" class="form-label">Entry</label>
+            <QuillEditor @ref="addEntryEditor" Content="@(AddEntryInput?.Content ?? "")" ContentChanged="@((content) => { if (AddEntryInput != null) AddEntryInput.Content = content; })" Placeholder="Write your entry here..." ShowButtons="true" ShowCancelButton="false" OnSave="HandleAddEntrySubmit" IsSaving="@Adding" />
         </div>
     </div>
 }
+
+@* Modal for creating a new chapter *@
+<div class="modal fade" id="newChapterModal" tabindex="-1" aria-labelledby="newChapterModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title fs-5" id="newChapterModalLabel">Add New Chapter</h1>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            @if (NewChapterInput != null)
+            {
+                <EditForm Model="NewChapterInput" OnValidSubmit="HandleNewChapterSubmit" FormName="new-chapter">
+                    <div class="modal-body">
+                        <DataAnnotationsValidator />
+                        <ValidationSummary class="text-danger" />
+
+                        <div class="mb-3">
+                            <label for="newChapterTitle" class="form-label">Chapter Title</label>
+                            <InputText @bind-Value="NewChapterInput!.Title" id="newChapterTitle" class="form-control" />
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" disabled="@Adding">Cancel</button>
+                        <button type="submit" class="btn btn-primary" disabled="@Adding">
+                            @if (Adding)
+                            {
+                                <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                                <span class="ms-2">Creating…</span>
+                            }
+                            else
+                            {
+                                <span>Create Chapter</span>
+                            }
+                        </button>
+                    </div>
+                </EditForm>
+            }
+        </div>
+    </div>
+</div>
 
 
 @* Chapters & Entries (read-only) *@
@@ -516,7 +544,7 @@ else
         }
     }
 
-    private async Task StartNewChapter(EditContext _)
+    private async Task HandleNewChapterSubmit(EditContext _)
     {
         if (StoryEntity is null)
         {
@@ -560,6 +588,9 @@ else
 
             NewChapterInput = new NewChapterModel();
             await ShowToast("Chapter created successfully.");
+            
+            // Close the modal
+            await CloseNewChapterModal();
         }
         catch (Exception ex)
         {
@@ -569,6 +600,18 @@ else
         finally
         {
             Adding = false;
+        }
+    }
+
+    private async Task CloseNewChapterModal()
+    {
+        try
+        {
+            await JS.InvokeVoidAsync("closeModal", "newChapterModal");
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error closing modal");
         }
     }
 
