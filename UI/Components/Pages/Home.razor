@@ -14,10 +14,18 @@
 <AuthorizeView>
     <Authorized>
         <h1>Welcome back writer!</h1>
-        <p>
-            Go to the <a href="/stories">Stories</a> page to manage and contribute to your stories.
-        </p>
-        
+        @if (lastEditedStory != null)
+        {
+            <p>
+                Would you like to keep working on <a href="/stories/edit/@lastEditedStory.Id"><strong>@lastEditedStory.Title</strong></a>? Or would you rather <a href="/stories">work on something else</a>?
+            </p>
+        }
+        else
+        {
+            <p>
+                Go to the <a href="/stories">Stories</a> page to manage and contribute to your stories.
+            </p>
+        }
     </Authorized>
     <NotAuthorized>
         <h1>MASS — the Multi-Author Story System!</h1>
@@ -38,8 +46,23 @@
 </AuthorizeView>
 
 @code {
+    private Story? lastEditedStory;
 
     protected override async Task OnInitializedAsync()
     {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+
+        if (user.Identity?.IsAuthenticated ?? false)
+        {
+            var currentUser = await UserManager.GetUserAsync(user);
+            if (currentUser != null)
+            {
+                lastEditedStory = await DbContext.Stories
+                    .Where(s => s.Chapters.Any(c => c.Entries.Any(e => e.CreatedBy.Id == currentUser.Id)))
+                    .OrderByDescending(s => s.Chapters.Max(c => c.Entries.Max(e => e.LastModifiedAt)))
+                    .FirstOrDefaultAsync();
+            }
+        }
     }
 }
