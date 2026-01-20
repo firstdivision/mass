@@ -2,9 +2,21 @@
 
 Multi Author Story System
 
-## Deploy
+## Phantom GCP Charges
 
-Manually run the Cloud Build trigger from GCP (having it monitor github seems to incur costs...)
+For a long time I was wondering why I was getting charged more than I thought I should be for Cloud Run which should scale to zero when no traffic comes in for a while.
+
+I finally found how to look at requests by going to GCP Logs Explorer and found the culprit.  
+
+Various scanners were hitting the IP address of the Global Load Balancer and making the Cloud Run App load the home page, thereby keeping it alive and running in GCP.
+
+The solution was to:
+- Create a new Cloud Storage Bucket called something like `lb-deadend-mass`
+- Upload a 404 page to it
+- Go to the Bucket Hamburger and select Website settings, and set the 404.html page as home and 404 page.
+- Add that bucket as a backend bucket to the load balancer
+- Use that bucket for any unmatched requests, and
+- Add a second host filter to the load balancer that would send matching traffic to the Cloud Run Service.
 
 ## Prerequisites
 
