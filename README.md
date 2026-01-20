@@ -2,6 +2,10 @@
 
 Multi Author Story System
 
+## Deploy
+
+Manually run the Cloud Build trigger from GCP (having it monitor github seems to incur costs...)
+
 ## Prerequisites
 
 Before you begin, ensure you have the following tools installed:
