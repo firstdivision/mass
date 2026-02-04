@@ -8,6 +8,7 @@
 @inject UserManager<MassIdentityUser> UserManager
 @inject IdentityRedirectManager RedirectManager
 @inject ILogger<LoginWithRecoveryCode> Logger
+@inject MassDbContext DbContext
 
 <PageTitle>Recovery code verification</PageTitle>
 
@@ -62,6 +63,10 @@
 
         if (result.Succeeded)
         {
+            // Update the user's last login timestamp
+            user.DateLastLoggedIn = DateTimeOffset.UtcNow;
+            await UserManager.UpdateAsync(user);
+            
             Logger.LogInformation("User with ID '{UserId}' logged in with a recovery code.", userId);
             RedirectManager.RedirectTo(ReturnUrl);
         }

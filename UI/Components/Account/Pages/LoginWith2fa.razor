@@ -8,6 +8,7 @@
 @inject UserManager<MassIdentityUser> UserManager
 @inject IdentityRedirectManager RedirectManager
 @inject ILogger<LoginWith2fa> Logger
+@inject MassDbContext DbContext
 
 <PageTitle>Two-factor authentication</PageTitle>
 
@@ -74,6 +75,10 @@
 
         if (result.Succeeded)
         {
+            // Update the user's last login timestamp
+            user.DateLastLoggedIn = DateTimeOffset.UtcNow;
+            await UserManager.UpdateAsync(user);
+            
             Logger.LogInformation("User with ID '{UserId}' logged in with 2fa.", userId);
             RedirectManager.RedirectTo(ReturnUrl);
         }

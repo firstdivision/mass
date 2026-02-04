@@ -10,6 +10,7 @@
 @inject ILogger<Login> Logger
 @inject NavigationManager NavigationManager
 @inject IdentityRedirectManager RedirectManager
+@inject MassDbContext DbContext
 
 <PageTitle>Log in</PageTitle>
 
@@ -128,6 +129,14 @@
 
         if (result.Succeeded)
         {
+            // Update the user's last login timestamp
+            var user = await UserManager.FindByNameAsync(Input.UserName);
+            if (user != null)
+            {
+                user.DateLastLoggedIn = DateTimeOffset.UtcNow;
+                await UserManager.UpdateAsync(user);
+            }
+            
             Logger.LogInformation("User logged in.");
             RedirectManager.RedirectTo(ReturnUrl);
         }

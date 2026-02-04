@@ -36,6 +36,7 @@ else
                     <th>Username</th>
                     <th>Contributable Stories</th>
                     <th>Entries</th>
+                    <th>Last Login</th>
                 </tr>
             </thead>
             <tbody>
@@ -45,6 +46,7 @@ else
                         <td>@author.UserName</td>
                         <td>@author.ContributableStoriesCount</td>
                         <td>@author.EntryCount</td>
+                        <td>@(author.DateLastLoggedIn?.ToString("g") ?? "Never")</td>
                     </tr>
                 }
             </tbody>
@@ -98,6 +100,7 @@ else
         public required string UserName { get; set; }
         public int ContributableStoriesCount { get; set; }
         public int EntryCount { get; set; }
+        public DateTimeOffset? DateLastLoggedIn { get; set; }
     }
 
     protected override async Task OnInitializedAsync()
@@ -148,7 +151,8 @@ else
                 {
                     UserName = u.UserName ?? "Unknown",
                     ContributableStoriesCount = u.CreatedStories.Count + u.ContributedStories.Count,
-                    EntryCount = u.CreatedEntries.Count
+                    EntryCount = u.CreatedEntries.Count,
+                    DateLastLoggedIn = u.DateLastLoggedIn
                 })
                 .ToListAsync();
         }

@@ -13,5 +13,6 @@ namespace mass.Data
         public virtual ICollection<Story> ContributedStories { get; set; } = new List<Story>();
         public virtual ICollection<Story> LockedStories { get; set; } = new List<Story>();
         public virtual ICollection<Entry> CreatedEntries { get; set; } = new List<Entry>();
+        public DateTimeOffset? DateLastLoggedIn { get; set; }
     }
 }

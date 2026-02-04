@@ -15,6 +15,7 @@
 @inject NavigationManager NavigationManager
 @inject IdentityRedirectManager RedirectManager
 @inject ILogger<ExternalLogin> Logger
+@inject MassDbContext DbContext
 
 <PageTitle>Register</PageTitle>
 
@@ -117,6 +118,16 @@
 
         if (result.Succeeded)
         {
+            // Update the user's last login timestamp
+            var user = await UserManager.FindByLoginAsync(
+                externalLoginInfo.LoginProvider,
+                externalLoginInfo.ProviderKey);
+            if (user != null)
+            {
+                user.DateLastLoggedIn = DateTimeOffset.UtcNow;
+                await UserManager.UpdateAsync(user);
+            }
+
             Logger.LogInformation(
                 "{Name} logged in with {LoginProvider} provider.",
                 externalLoginInfo.Principal.Identity?.Name,
@@ -183,6 +194,8 @@
                 }
                 else
                 {
+                    user.DateLastLoggedIn = DateTimeOffset.UtcNow;
+                    await UserManager.UpdateAsync(user);
                     await SignInManager.SignInAsync(user, isPersistent: false, externalLoginInfo.LoginProvider);
                     RedirectManager.RedirectTo(ReturnUrl);
                 }
