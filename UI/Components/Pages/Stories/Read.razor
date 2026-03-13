@@ -23,18 +23,22 @@ else if (Story is null)
 }
 else
 {
-    <article class="reading-mode">
-        <header>
+    <div class="reading-shell">
+        <article class="reading-mode">
+        <header class="reading-header">
             @if (!Story.IsPublic && IsContributor)
             {
-                <div class="alert alert-info" role="alert">
+                <div class="alert alert-info reading-note" role="alert">
                     <strong>Note:</strong> This story is not public, but you can read it because you are a contributor.
                 </div>
             }
-            <h1>@Story.Title</h1>
-            <p class="lead">@Story.Description</p>
-            <p class="text-muted">Last modified @Story.LastModifiedAt.ToLocalTime().ToString("g")</p>
-            <p class="text-muted">Contributors: @string.Join(", ", authors)</p>
+            <h1 class="story-title">@Story.Title</h1>
+            @if (!string.IsNullOrWhiteSpace(Story.Description))
+            {
+                <p class="story-description">@Story.Description</p>
+            }
+            <p class="story-meta">Last modified @Story.LastModifiedAt.ToLocalTime().ToString("g")</p>
+            <p class="story-meta">Contributors: @string.Join(", ", authors)</p>
             <hr />
         </header>
 
@@ -50,7 +54,8 @@ else
                 }
             </section>
         }
-    </article>
+        </article>
+    </div>
 }
 
 @code {
