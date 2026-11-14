@@ -26,6 +26,10 @@ article.content {
 }
 
 @media (max-width: 760px) {
+    .page {
+        flex-direction: column;
+    }
+
     .sidebar {
         position: relative;
         flex: none;
