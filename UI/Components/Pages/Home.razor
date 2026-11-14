@@ -9,41 +9,118 @@
 @inject UserManager<MassIdentityUser> UserManager
 @inject AuthenticationStateProvider AuthenticationStateProvider
 
-<PageTitle>Home</PageTitle>
- <img src="/images/writers.jpg" alt="Writers collaborating" class="img-fluid mb-4 rounded" />
+<PageTitle>MASS — stories, written together</PageTitle>
+
+<div class="home-page">
 <AuthorizeView>
     <Authorized>
-        <h1>Welcome back writer!</h1>
-        @if (lastEditedStory != null)
-        {
-            <p>
-                Would you like to keep working on <a href="/stories/edit/@lastEditedStory.Id"><strong>@lastEditedStory.Title</strong></a>? Or would you rather <a href="/stories">work on something else</a>?
-            </p>
-        }
-        else
-        {
-            <p>
-                Go to the <a href="/stories">Stories</a> page to manage and contribute to your stories.
-            </p>
-        }
+        <section class="home-hero member-hero">
+            <div class="hero-art">
+                <img src="/images/writers.jpg" alt="Ink illustration of books and writing tools" />
+                <span class="art-label"><span>AN OPEN</span><strong>NOTEBOOK</strong></span>
+            </div>
+            <div class="hero-copy">
+                <p class="eyebrow">Your writing desk</p>
+                <h1>Welcome back,<br /><em>writer.</em></h1>
+                <p class="hero-lede">A good story is always ready for its next chapter. Pick up where you left off, or find a new spark.</p>
+
+                @if (lastEditedStory != null)
+                {
+                    <div class="resume-card">
+                        <div class="resume-copy">
+                            <span class="resume-kicker">Pick up where you left off</span>
+                            <h2><a href="/stories/edit/@lastEditedStory.Id">@lastEditedStory.Title</a></h2>
+                        </div>
+                        <a class="btn btn-primary" href="/stories/edit/@lastEditedStory.Id">
+                            Keep writing <span class="bi bi-arrow-up-right" aria-hidden="true"></span>
+                        </a>
+                    </div>
+                }
+                else
+                {
+                    <div class="resume-card empty-resume">
+                        <div class="resume-copy">
+                            <span class="resume-kicker">A fresh page is waiting</span>
+                            <p>Start a story of your own, then invite others to add their voices.</p>
+                        </div>
+                        <a class="btn btn-primary" href="/stories/create">
+                            Start a story <span class="bi bi-arrow-up-right" aria-hidden="true"></span>
+                        </a>
+                    </div>
+                }
+
+                <a class="quiet-link" href="/stories/public">Browse stories from the community <span aria-hidden="true">→</span></a>
+            </div>
+        </section>
+
+        <section class="home-next-steps" aria-label="Writing studio shortcuts">
+            <a class="next-step-card" href="/stories">
+                <span class="step-number">01</span>
+                <span class="step-copy"><strong>Your stories</strong><small>Keep every draft in one place</small></span>
+                <span class="bi bi-arrow-up-right step-arrow" aria-hidden="true"></span>
+            </a>
+            <a class="next-step-card" href="/writing-prompt">
+                <span class="step-number">02</span>
+                <span class="step-copy"><strong>Find a prompt</strong><small>A little nudge for your next idea</small></span>
+                <span class="bi bi-arrow-up-right step-arrow" aria-hidden="true"></span>
+            </a>
+            <a class="next-step-card" href="/authors">
+                <span class="step-number">03</span>
+                <span class="step-copy"><strong>Meet the authors</strong><small>Get to know your collaborators</small></span>
+                <span class="bi bi-arrow-up-right step-arrow" aria-hidden="true"></span>
+            </a>
+        </section>
     </Authorized>
     <NotAuthorized>
-        <h1>MASS — the Multi-Author Story System!</h1>
+        <section class="home-hero guest-hero">
+            <div class="hero-art">
+                <img src="/images/writers.jpg" alt="Ink illustration of books and writing tools" />
+                <span class="art-label"><span>IDEAS GROW</span><strong>TOGETHER</strong></span>
+            </div>
+            <div class="hero-copy">
+                <p class="eyebrow">Multi-Author Story System</p>
+                <h1>Some stories<br />are better <em>together.</em></h1>
+                <p class="hero-lede">MASS is a shared writing space for creating stories, inviting collaborators, and building a narrative one voice at a time.</p>
+                <div class="hero-actions">
+                    <a class="btn btn-primary" href="/Account/Register">
+                        Start writing <span class="bi bi-arrow-up-right" aria-hidden="true"></span>
+                    </a>
+                    <a class="btn btn-outline-primary" href="/stories/public">Explore public stories</a>
+                </div>
+                <p class="hero-footnote"><span class="bi bi-feather" aria-hidden="true"></span> A welcoming place for your next great idea.</p>
+            </div>
+        </section>
 
-        <p class="lead">MASS lets people collaborate to write stories together — create stories and chapters, invite contributors, and build multi-author narratives with simple tools.</p>
-
-        <ul>
-            <li><strong>Create</strong> stories, chapters, and entries</li>
-            <li><strong>Collaborate</strong> with contributors and manage access</li>
-            <li><strong>Publish</strong> and share finished stories</li>
-        </ul>
-
-        <p>Ready to get started?</p>
-
-        <a class="btn btn-primary" href="/Account/Login">Sign in</a>
-        <a class="btn btn-outline-primary ms-2" href="/stories/public">Explore Public Stories</a>
+        <section class="home-process">
+            <div class="section-heading">
+                <p class="eyebrow">Made for collaboration</p>
+                <h2>Bring your next story to life.</h2>
+                <p>From the first spark to the final chapter, everything you need to write together is right here.</p>
+            </div>
+            <div class="feature-grid">
+                <article class="feature-card">
+                    <span class="feature-number">01</span>
+                    <span class="feature-icon bi bi-journal-richtext" aria-hidden="true"></span>
+                    <h3>Start with a story</h3>
+                    <p>Create a world, shape its chapters, and give your ideas room to grow.</p>
+                </article>
+                <article class="feature-card">
+                    <span class="feature-number">02</span>
+                    <span class="feature-icon bi bi-people" aria-hidden="true"></span>
+                    <h3>Invite your people</h3>
+                    <p>Bring contributors into the process and let every voice move the story forward.</p>
+                </article>
+                <article class="feature-card">
+                    <span class="feature-number">03</span>
+                    <span class="feature-icon bi bi-book-half" aria-hidden="true"></span>
+                    <h3>Share what you make</h3>
+                    <p>Publish a finished story for readers to discover and enjoy.</p>
+                </article>
+            </div>
+        </section>
     </NotAuthorized>
 </AuthorizeView>
+</div>
 
 @code {
     private Story? lastEditedStory;

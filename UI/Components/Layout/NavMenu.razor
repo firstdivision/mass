@@ -2,86 +2,103 @@
 
 @inject NavigationManager NavigationManager
 
-<div class="top-row ps-3 navbar navbar-dark">
-    <div class="container-fluid">
-        <a class="navbar-brand" href="">mass</a>
+<div class="nav-shell">
+    <div class="brand-row">
+        <a class="navbar-brand" href="">
+            <span class="brand-mark" aria-hidden="true">m</span>
+            <span class="brand-copy">
+                <strong>MASS</strong>
+                <small>STORY STUDIO</small>
+            </span>
+        </a>
     </div>
+
+    <input id="nav-toggle" type="checkbox" title="Toggle navigation" aria-label="Toggle navigation" class="navbar-toggler" />
+
+    <div class="nav-scrollable" onclick="document.getElementById('nav-toggle').click()">
+        <nav class="nav flex-column" aria-label="Main navigation">
+            <p class="nav-caption">Discover</p>
+            <div class="nav-item">
+                <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
+                    <span class="bi bi-house-door" aria-hidden="true"></span>
+                    <span>Home</span>
+                </NavLink>
+            </div>
+            <div class="nav-item">
+                <NavLink class="nav-link" href="stories/public" Match="NavLinkMatch.All">
+                    <span class="bi bi-book-half" aria-hidden="true"></span>
+                    <span>Public Stories</span>
+                </NavLink>
+            </div>
+
+            <AuthorizeView>
+                <Authorized>
+                    <p class="nav-caption">Your studio</p>
+                    <div class="nav-item">
+                        <NavLink class="nav-link" href="stories" Match="NavLinkMatch.All">
+                            <span class="bi bi-journal-richtext" aria-hidden="true"></span>
+                            <span>My Stories</span>
+                        </NavLink>
+                    </div>
+                    <div class="nav-item">
+                        <NavLink class="nav-link" href="stories/invites" Match="NavLinkMatch.All">
+                            <span class="bi bi-envelope" aria-hidden="true"></span>
+                            <span>My Invites</span>
+                        </NavLink>
+                    </div>
+                    <div class="nav-item">
+                        <NavLink class="nav-link" href="writing-prompt" Match="NavLinkMatch.All">
+                            <span class="bi bi-lightbulb" aria-hidden="true"></span>
+                            <span>Writing Prompt</span>
+                        </NavLink>
+                    </div>
+                    <div class="nav-item">
+                        <NavLink class="nav-link" href="authors" Match="NavLinkMatch.All">
+                            <span class="bi bi-people" aria-hidden="true"></span>
+                            <span>Authors</span>
+                        </NavLink>
+                    </div>
+                    <div class="nav-item">
+                        <NavLink class="nav-link" href="Account/Manage">
+                            <span class="bi bi-person-circle" aria-hidden="true"></span>
+                            <span class="nav-link-text">@context.User.Identity?.Name</span>
+                        </NavLink>
+                    </div>
+                    <div class="nav-item logout-item">
+                        <form action="Account/Logout" method="post">
+                            <AntiforgeryToken />
+                            <input type="hidden" name="ReturnUrl" value="@currentUrl" />
+                            <button type="submit" class="nav-link">
+                                <span class="bi bi-box-arrow-right" aria-hidden="true"></span>
+                                <span>Log out</span>
+                            </button>
+                        </form>
+                    </div>
+                </Authorized>
+                <NotAuthorized>
+                    <p class="nav-caption">Join the studio</p>
+                    <div class="nav-item">
+                        <NavLink class="nav-link" href="Account/Register">
+                            <span class="bi bi-person-plus" aria-hidden="true"></span>
+                            <span>Create an account</span>
+                        </NavLink>
+                    </div>
+                    <div class="nav-item">
+                        <NavLink class="nav-link" href="Account/Login">
+                            <span class="bi bi-box-arrow-in-right" aria-hidden="true"></span>
+                            <span>Sign in</span>
+                        </NavLink>
+                    </div>
+                </NotAuthorized>
+            </AuthorizeView>
+        </nav>
+    </div>
+
+    <footer class="nav-footer">
+        <p>Made for stories worth sharing.</p>
+        <small>&copy; MASS · build <span id="build-date">BUILD_DATE_PLACEHOLDER</span></small>
+    </footer>
 </div>
-
-<input type="checkbox" title="Navigation menu" class="navbar-toggler" />
-
-<div class="nav-scrollable" onclick="document.querySelector('.navbar-toggler').click()">
-    <nav class="nav flex-column">
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
-                <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> Home
-            </NavLink>
-        </div>
-
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="stories/public" Match="NavLinkMatch.All">
-                <span class="bi bi-building-nav-menu" aria-hidden="true"></span> Public Stories
-            </NavLink>
-        </div>
-
-        <AuthorizeView>
-            <Authorized>
-                <div class="nav-item px-3">
-                    <NavLink class="nav-link" href="writing-prompt" Match="NavLinkMatch.All">
-                        <span class="bi bi-wand-magic-nav-menu" aria-hidden="true"></span> Writing Prompt
-                    </NavLink>
-                </div>
-
-                <div class="nav-item px-3">
-                    <NavLink class="nav-link" href="authors" Match="NavLinkMatch.All">
-                        <span class="bi bi-people-nav-menu" aria-hidden="true"></span> Authors
-                    </NavLink>
-                </div>
-
-                <div class="nav-item px-3">
-                    <NavLink class="nav-link" href="Account/Manage">
-                        <span class="bi bi-person-fill-nav-menu" aria-hidden="true"></span> @context.User.Identity?.Name
-                    </NavLink>
-                </div>
-                <div class="nav-item px-3">
-                    <NavLink class="nav-link" href="stories/invites" Match="NavLinkMatch.All">
-                        <span class="bi bi-envelope-fill-nav-menu" aria-hidden="true"></span> My Invites
-                    </NavLink>
-                </div>
-                <div class="nav-item px-3">
-                    <NavLink class="nav-link" href="stories" Match="NavLinkMatch.All">
-                        <span class="bi bi-book-fill-nav-menu" aria-hidden="true"></span> My Stories
-                    </NavLink>
-                </div>
-                <div class="nav-item px-3">
-                    <form action="Account/Logout" method="post">
-                        <AntiforgeryToken />
-                        <input type="hidden" name="ReturnUrl" value="@currentUrl" />
-                        <button type="submit" class="nav-link">
-                            <span class="bi bi-arrow-bar-left-nav-menu" aria-hidden="true"></span> Logout
-                        </button>
-                    </form>
-                </div>
-            </Authorized>
-            <NotAuthorized>
-                <div class="nav-item px-3">
-                    <NavLink class="nav-link" href="Account/Register">
-                        <span class="bi bi-person-nav-menu" aria-hidden="true"></span> Register
-                    </NavLink>
-                </div>
-                <div class="nav-item px-3">
-                    <NavLink class="nav-link" href="Account/Login">
-                        <span class="bi bi-person-badge-nav-menu" aria-hidden="true"></span> Login
-                    </NavLink>
-                </div>
-            </NotAuthorized>
-        </AuthorizeView>
-    </nav>
-</div>
-
-<footer class="nav-footer">
-    <p>&copy; mass - build <span id="build-date">BUILD_DATE_PLACEHOLDER</span></p>
-</footer>
 
 @code {
     private string? currentUrl;
@@ -103,4 +120,3 @@
         NavigationManager.LocationChanged -= OnLocationChanged;
     }
 }
-

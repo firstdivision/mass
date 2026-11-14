@@ -1,8 +1,23 @@
+﻿:root {
+    --paper: #f6f2e9;
+    --surface: #fffdf9;
+    --sidebar: #fbf8f2;
+    --ink: #2e2a25;
+    --ink-soft: #514a42;
+    --muted: #81786c;
+    --line: #e7dfd4;
+    --terracotta: #a64f35;
+    --terracotta-dark: #843d2b;
+}
+
 html, body {
-    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
     width: 100%;
-    height: 100%;
+    min-height: 100%;
+    margin: 0;
     overflow-x: hidden;
+    background: var(--paper);
+    color: var(--ink);
 }
 
 * {
@@ -10,21 +25,36 @@ html, body {
 }
 
 a, .btn-link {
-    color: #006bb7;
+    color: var(--terracotta-dark);
 }
 
 .btn-primary {
     color: #fff;
-    background-color: #1b6ec2;
-    border-color: #1861ac;
+    background-color: var(--terracotta);
+    border-color: var(--terracotta);
+}
+
+.btn-primary:hover,
+.btn-primary:active {
+    color: #fff;
+    background-color: var(--terracotta-dark);
+    border-color: var(--terracotta-dark);
+}
+
+.btn-outline-primary {
+    color: var(--terracotta-dark);
+    border-color: #c99d8b;
+}
+
+.btn-outline-primary:hover,
+.btn-outline-primary:active {
+    color: #fff;
+    background-color: var(--terracotta);
+    border-color: var(--terracotta);
 }
 
 .btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
-  box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
-}
-
-.content {
-    padding-top: 1.1rem;
+  box-shadow: 0 0 0 0.12rem var(--paper), 0 0 0 0.28rem rgba(166, 79, 53, 0.45);
 }
 
 h1:focus {
