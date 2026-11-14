@@ -1,9 +1,22 @@
 ﻿<!DOCTYPE html>
+@inject NavigationManager NavigationManager
 <html lang="en">
 
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+    <meta name="description" content="MASS is a shared writing space for creating stories, inviting collaborators, and building a narrative one voice at a time." />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="MASS" />
+    <meta property="og:title" content="MASS — stories, written together" />
+    <meta property="og:description" content="A shared writing space for creating stories, inviting collaborators, and building a narrative one voice at a time." />
+    <meta property="og:url" content="@NavigationManager.BaseUri" />
+    <meta property="og:image" content="@($"{NavigationManager.BaseUri}images/writers.jpg")" />
+    <meta property="og:image:alt" content="Ink illustration of books and writing tools" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="MASS — stories, written together" />
+    <meta name="twitter:description" content="A shared writing space for creating stories, inviting collaborators, and building a narrative one voice at a time." />
+    <meta name="twitter:image" content="@($"{NavigationManager.BaseUri}images/writers.jpg")" />
     <base href="/" />
     <ResourcePreloader />
     <link rel="stylesheet" href="@Assets["lib/bootstrap/dist/css/bootstrap.min.css"]" />
